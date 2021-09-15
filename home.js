@@ -182,8 +182,15 @@ function getIcal(message, params) {
 	}
 
 	async function makeGetRequest(url, message, param, idChannel) {
-		let res = await axios.get(url);
-		parseIcsDirectly(res.data, message, param, idChannel);
+		let res = await axios.get(url)
+		.then((res) => {
+			parseIcsDirectly(res.data, message, param, idChannel);
+		})
+		.catch((error) => {
+			console.log(error.response.data);
+			console.log(error.response.status);
+			console.log(error.response.headers);
+		});
 	}
 }
 
