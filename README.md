@@ -12,4 +12,4 @@ Description : Module NodeJs Hyper Planning in discord
 - [x] Style message iPhone/Android/Bureau
 
 Connection requête : ne pas arrêter le bot
-- [!] Vérifier si hyperplanning indisponnible
+- [x] Vérifier si hyperplanning indisponnible
