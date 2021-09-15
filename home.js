@@ -55,16 +55,38 @@ var data = fs.readFileSync('./uuidMessages.json'), myObj;
 
 client.on('ready', () => {
 	console.log(`Logged in as ${client.user.tag}!`);
-
-	client.channels.fetch('886949854323032064').then(channel => console.log(channel.name));
     // getIcal();
 });
 
+setInterval(() => {
+	getIcal("", "DEV");
+	getIcal("", "SLAM");
+	getIcal("", "SISR");
+}, (30*60*1000));
+
 client.on('message', async message => {
+
+	// ##################
+	// pour Ali
+	var idAli = "811165642211983380";
+	if (message.author.id == idAli) {
+		Promise.all([
+			message.react('🇮'),
+			message.react('🇱'),
+			message.react('🇴'),
+			message.react('🇻'),
+			message.react('🇪'),
+			message.react('🇺'),
+			message.react('❤️')
+		]).catch(error => console.error('One of the emojis failed to react:', error));
+	}
+	// ##################
+
 	let args = message.content.split(" ");
-		message.delete({ timeout: 1 }).catch(console.error);
 
 	if (args[0] == `${prefix}first`) {
+		deleteMsg(message);
+
 		message.channel.send('Calendrier de Lundi & Mardi !');
 
 		// switch(args[1]){
@@ -84,6 +106,8 @@ client.on('message', async message => {
 	}
 
 	if (args[0] === `${prefix}uuid`) {
+		deleteMsg(message);
+
 		switch(args[1]){
 			case "SLAM":
 				uuid_slam = args[2];
@@ -115,6 +139,8 @@ client.on('message', async message => {
 	}
 
 	if (args[0] === `${prefix}planning` || args[0] === `${prefix}1`) {
+		deleteMsg(message);
+
 		console.log(args);
 
 		switch(args[1]){
@@ -204,13 +230,13 @@ function parseIcsDirectly(DataIcs, message, param, idChannel) {
 
 async function displayMsg(message, arrayGenerate, param) {
 
-	console.log(arrayGenerate);
-	var planning = "***```fix\nCours du Lundi :```***\n";
+	// console.log(arrayGenerate);
+	var planning = "**```FIX\nCours du Lundi :```**\n";
 		arrayGenerate[0].forEach((value, key) => {
 			planning += msgFormating(value);
 		})
 
-	planning += "***```fix\nCours du Mardi :```***\n";
+	planning += "\n**```FIX\nCours du Mardi :```**\n";
 
 		arrayGenerate[1].forEach((value, key) => {
 			planning += msgFormating(value);
@@ -222,26 +248,39 @@ async function displayMsg(message, arrayGenerate, param) {
 	switch(param){
 		case "SLAM":
 			uuidParam = uuid_slam;
+			uuidChannel = channel_slam;
 			break;
 		case "SISR":
 			uuidParam = uuid_sisr;
+			uuidChannel = channel_sisr;
 			break;
 		case "DEV":
 			uuidParam = uuid_dev;
+			uuidChannel = channel_dev;
 			break;
 	}
 
-	message.channel.messages.fetch({around: uuidParam, limit: 1})
-		.then(msg => {
-			const fetchedMsg = msg.first();
-			fetchedMsg.edit(planning);
-		}).catch(() => {
-			message.channel.send('Calendrier de Lundi & Mardi !');
-		});
+	client.channels.fetch(uuidChannel).then((channel) => {
+		console.log("Mise a jour du planning dans "+channel.name);
+
+		channel.messages.fetch({around: uuidParam, limit: 1})
+			.then(msg => {
+				const fetchedMsg = msg.first();
+				fetchedMsg.edit(planning);
+			}).catch((err) => {
+				console.log('Not message found in : '+channel.name);
+				console.log(err);
+			});
+	});
 }
 
 function msgFormating(value) {
-	return "Debut :		"+moment(value.start).calendar()+"\nFin :			  "+moment(value.end).calendar()+"\n```"+value.description+"```\n";
+	return "> Debut :		"+moment(value.start).calendar()+"\n> Fin :			  "+moment(value.end).calendar()+"\n```"+value.description+"```\n";
+}
+
+function deleteMsg(message) {
+	message.delete({ timeout: 1 }).catch(console.error);
+	return 1
 }
 
 function dateToString(date) {
