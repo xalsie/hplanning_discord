@@ -30,7 +30,6 @@ var endNextWeek = moment().week(Number.parseInt(moment().format('W'))+1).startOf
 // ______________________
 
 const { prefix, token } = require('./config.json');
-const { channel } = require('diagnostics_channel');
 
 var data = fs.readFileSync('./uuidMessages.json'), myObj;
 	var { uuid_slam, uuid_sisr, uuid_dev, channel_slam, channel_sisr, channel_dev } = "";
@@ -54,21 +53,47 @@ var data = fs.readFileSync('./uuidMessages.json'), myObj;
 	}
 
 client.on('ready', () => {
+	console.log("BOT startup : "+moment().format('LTS'));
+
+	var x = false;
+	if ((moment().format('LTS') >= moment("20210920T113000Z").format('LTS')) && (moment().format('LTS') <= moment("20210920T130000Z").format('LTS'))) {
+		x = true;
+	}
+
+	console.log("#########################"+moment().format('LTS'));
+	console.log("#########"+moment("20210920T113000Z").format('LTS'));
+	console.log("#########"+moment("20210920T130000Z").format('LTS'));
+	console.log(x);
+
 	console.log(`Logged in as ${client.user.tag}!`);
-    // getIcal();
 });
 
-setInterval(() => {
-	getIcal("", "DEV");
-	getIcal("", "SLAM");
-	getIcal("", "SISR");
-}, (30*60*1000));
+(function loop(){
+	setTimeout(function() {
+		getIcal("", "DEV");
+		getIcal("", "SLAM");
+		getIcal("", "SISR");
+	   loop();
+   }, refreshRate());
+})();
+
+function refreshRate() {
+	var rtn = 0;
+	if (moment().toDate() <= moment().startOf('week').add(2, 'days').toDate()) {
+		rtn = 15; // 15 minutes
+	} else {
+		rtn = 120; // 120 minutes = 2H
+	}
+
+	console.log(rtn);
+	return rtn*60*1000;
+}
 
 client.on('message', async message => {
 
 	// ##################
 	// pour Ali
-	var idAli = "811165642211983380";
+	var idAli = "811165642211983380/";
 	if (message.author.id == idAli) {
 		Promise.all([
 			message.react('🇮'),
@@ -84,31 +109,16 @@ client.on('message', async message => {
 
 	let args = message.content.split(" ");
 
-	if (args[0] == `${prefix}first`) {
+	if (args[0].toLowerCase() == `${prefix}first`) {
 		deleteMsg(message);
 
 		message.channel.send('Calendrier de Lundi & Mardi !');
-
-		// switch(args[1]){
-		// 	case "SLAM":
-		// 		uuid_slam = args[2];
-		// 		console.log("UUID SALM : "+uuid_slam);
-		// 		break;
-		// 	case "SISR":
-		// 		uuid_sisr = args[2];
-		// 		console.log("UUID SISR : "+uuid_sisr);
-		// 		break;
-		// 	case "DEV":
-		// 		uuid_dev = args[2];
-		// 		console.log("UUID DEV : "+uuid_dev);
-		// 		break;
-		// }
 	}
 
-	if (args[0] === `${prefix}uuid`) {
+	if (args[0].toLowerCase() === `${prefix}uuid`) {
 		deleteMsg(message);
 
-		switch(args[1]){
+		switch(args[1].toUpperCase()){
 			case "SLAM":
 				uuid_slam = args[2];
 				myObj.uuids.SLAM = args[2];
@@ -138,12 +148,12 @@ client.on('message', async message => {
 		});
 	}
 
-	if (args[0] === `${prefix}planning` || args[0] === `${prefix}1`) {
+	if (args[0].toLowerCase() === `${prefix}planning` || args[0].toLowerCase() === `${prefix}1`) {
 		deleteMsg(message);
 
 		console.log(args);
 
-		switch(args[1]){
+		switch(args[1].toUpperCase()){
 			case "SLAM":
 				getIcal(message, args[1]);
 				break;
@@ -152,6 +162,10 @@ client.on('message', async message => {
 				break;
 			case "DEV":
 				getIcal(message, args[1]);
+				break;
+			case "ALL":
+				getIcal("", "SLAM");
+				getIcal("", "SISR");
 				break;
 		}
 	}
@@ -238,18 +252,19 @@ function parseIcsDirectly(DataIcs, message, param, idChannel) {
 async function displayMsg(message, arrayGenerate, param) {
 
 	// console.log(arrayGenerate);
-	var planning = "**```FIX\nCours du Lundi :```**\n";
+	var planning = "**```FIX\nCours du "+moment((moment().toDate() < moment(endWeek).add(1, 'days'))? startWeek:startNextWeek).format("dddd DD MMMM")+" :```**\n";
+
 		arrayGenerate[0].forEach((value, key) => {
 			planning += msgFormating(value);
 		})
 
-	planning += "\n**```FIX\nCours du Mardi :```**\n";
+	planning += "\n**```FIX\nCours du "+moment((moment().toDate() < moment(endWeek).add(1, 'days'))? endWeek:endNextWeek).format("dddd DD MMMM")+" :```**\n";
 
 		arrayGenerate[1].forEach((value, key) => {
 			planning += msgFormating(value);
 		})
 
-	planning += "```diff\n+ Mise à jour : "+moment().calendar()+"```";
+	planning += "```diff\n+ 🔄 Mise à jour : "+moment().calendar()+"```";
 
 	var uuidParam = "";
 	switch(param){
@@ -268,22 +283,45 @@ async function displayMsg(message, arrayGenerate, param) {
 	}
 
 	client.channels.fetch(uuidChannel).then((channel) => {
-		console.log("Mise a jour du planning dans "+channel.name);
+		console.log("Mise a jour du planning dans "+channel.name+" : "+moment().format('llll'));
 
 		channel.messages.fetch({around: uuidParam, limit: 1})
-			.then(msg => {
-				const fetchedMsg = msg.first();
-				fetchedMsg.edit(planning);
-			}).catch((err) => {
-				console.log('Not message found in : '+channel.name);
-				console.log(err);
-			});
+		.then(msg => {
+			const fetchedMsg = msg.first();
+			fetchedMsg.edit(planning);
+		}).catch((err) => {
+			console.log('Not message found in : '+channel.name);
+			console.log(err);
+		});
 	});
 }
 
 function msgFormating(value) {
-	return "> Debut :		"+moment(value.start).calendar()+"\n> Fin :			  "+moment(value.end).calendar()+"\n```"+value.description+"```\n";
+	var x = ((moment() >= moment(value.start)) && (moment() <= moment(value.end)))? "\>":"";
+	// var timer = ((moment() >= moment(value.start)) && (moment() <= moment(value.end)))? "> ⏳  Timer :		[===>     ]\n":"";
+	var timer = "";
+
+	var str = "> 🕐  "+x+" Debut :		"+moment(value.start).calendar()+"\n"+
+				timer+
+				"> ```"+value.description.trim().replaceAll("\n", "\n> ")+"```"+
+				"\n> 🕐  Fin :		"+moment(value.end).calendar()+
+				"\n➖➖➖➖➖➖➖➖➖➖➖➖➖\n\n";
+	
+	return str;
 }
+
+
+/*
+🕐  Debut :        Aujourd’hui à 08:30
+⏳  Timer :        [===>     ]
+> Matière : LV1 - Anglais
+> Enseignant : ALI
+> Promotions : BTS SIO SISR 2, BTS SIO SLAM 2
+> Salle : 1er étage - MADRID
+
+🕐  Fin :        Aujourd’hui à 10:30
+➖➖➖➖➖➖➖➖➖➖➖➖➖
+*/
 
 function deleteMsg(message) {
 	message.delete({ timeout: 1 }).catch(console.error);
