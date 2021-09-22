@@ -15,7 +15,7 @@ $/> !first
 $/> !uuid {slam/sisr/all} {uuid}
 ```
 
-## Version 0.2.0 (21 sept. 2021)
+## Version 0.2.0 (23 sept. 2021)
 
 -  [x] Mise à jour automatique du planning
 	```
@@ -24,7 +24,6 @@ $/> !uuid {slam/sisr/all} {uuid}
 	```
 -  [x] Mise à jour du design
 -  [x] Ajout la possibilité d'actualisé les deux plannings avec une commande
--  [x] Ajout
 
 ## Version 0.1.0 (15 sept. 2021)
 
