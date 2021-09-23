@@ -12,7 +12,7 @@ $/> !planning {slam/sisr/all}
 
 ```
 $/> !first
-$/> !uuid {slam/sisr/all} {uuid}
+$/> !uuid {slam/sisr} {uuid}
 ```
 
 ## Version 0.2.0 (23 sept. 2021)
