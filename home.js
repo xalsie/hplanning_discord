@@ -30,6 +30,7 @@ var endNextWeek = moment().week(Number.parseInt(moment().format('W'))+1).startOf
 // ______________________
 
 const { prefix, token } = require('./config.json');
+const { exit } = require('process');
 
 var data = fs.readFileSync('./uuidMessages.json'), myObj;
 	var { uuid_slam, uuid_sisr, uuid_dev, channel_slam, channel_sisr, channel_dev } = "";
@@ -77,18 +78,6 @@ client.on('ready', () => {
    }, refreshRate());
 })();
 
-function refreshRate() {
-	var rtn = 0;
-	if (moment().toDate() <= moment().startOf('week').add(2, 'days').toDate()) {
-		rtn = 15; // 15 minutes
-	} else {
-		rtn = 120; // 120 minutes = 2H
-	}
-
-	console.log(rtn);
-	return rtn*60*1000;
-}
-
 client.on('message', async message => {
 
 	// ##################
@@ -108,6 +97,10 @@ client.on('message', async message => {
 	// ##################
 
 	let args = message.content.split(" ");
+
+	if (args[0].toLowerCase() == `${prefix}2`) {
+		functtestte();
+	}
 
 	if (args[0].toLowerCase() == `${prefix}first`) {
 		deleteMsg(message);
@@ -155,13 +148,13 @@ client.on('message', async message => {
 
 		switch(args[1].toUpperCase()){
 			case "SLAM":
-				getIcal(message, args[1]);
+				getIcal(message, "SLAM");
 				break;
 			case "SISR":
-				getIcal(message, args[1]);
+				getIcal(message, "SISR");
 				break;
 			case "DEV":
-				getIcal(message, args[1]);
+				getIcal(message, "DEV");
 				break;
 			case "ALL":
 				getIcal("", "SLAM");
@@ -251,20 +244,24 @@ function parseIcsDirectly(DataIcs, message, param, idChannel) {
 
 async function displayMsg(message, arrayGenerate, param) {
 
+	var rtnVersion = displayVersion();
+
 	// console.log(arrayGenerate);
-	var planning = "**```FIX\nCours du "+moment((moment().toDate() < moment(endWeek).add(1, 'days'))? startWeek:startNextWeek).format("dddd DD MMMM")+" :```**\n";
+	var planning = "**```FIX\nCours du "+moment((moment().toDate() < moment(endWeek).add(1, 'days'))? startWeek:startNextWeek).format("dddd DD MMMM")+":```**\n";
 
 		arrayGenerate[0].forEach((value, key) => {
 			planning += msgFormating(value);
 		})
 
-	planning += "\n**```FIX\nCours du "+moment((moment().toDate() < moment(endWeek).add(1, 'days'))? endWeek:endNextWeek).format("dddd DD MMMM")+" :```**\n";
+	planning += "\n**```FIX\nCours du "+moment((moment().toDate() < moment(endWeek).add(1, 'days'))? endWeek:endNextWeek).format("dddd DD MMMM")+":```**\n";
 
 		arrayGenerate[1].forEach((value, key) => {
 			planning += msgFormating(value);
 		})
 
-	planning += "```diff\n+ 🔄 Mise à jour : "+moment().calendar()+"```";
+	planning += "```DIFF\n+ 🔄Mise à jour: "+moment().calendar()+"```";
+
+	planning += "\n\n```CS\nV"+rtnVersion.version+" ("+rtnVersion.dateversion+")```";
 
 	var uuidParam = "";
 	switch(param){
@@ -297,35 +294,62 @@ async function displayMsg(message, arrayGenerate, param) {
 }
 
 function msgFormating(value) {
-	var x = ((moment() >= moment(value.start)) && (moment() <= moment(value.end)))? "\>":"";
-	// var timer = ((moment() >= moment(value.start)) && (moment() <= moment(value.end)))? "> ⏳  Timer :		[===>     ]\n":"";
-	var timer = "";
+	var x = ((moment() >= moment(value.start)) && (moment() <= moment(value.end)))? " \> ":"";
 
-	var str = "> 🕐  "+x+" Debut :		"+moment(value.start).calendar()+"\n"+
+	now = moment();
+	var percentage_rounded = ((Math.round(((now - value.start) / (value.end - value.start) * 100)*100) / 100)/10)-1;
+	var strBarTime = "          ";
+
+	for (let index = 1; index < percentage_rounded; index++) {
+		strBarTime = strBarTime.replace(" ", "=");
+	}
+
+	var timer = ((moment() >= moment(value.start)) && (moment() <= moment(value.end)))? "> ⏳Timer: ["+strBarTime.replace(" ", ">")+"] "+Math.round(percentage_rounded*10)+"%\n":"";
+
+	var description = (value.description.trim().toLowerCase().includes("report") || value.description.trim().toLowerCase().includes("annulé"))? "DIFF\n- "+value.description.replaceAll("\n", "\n- "):value.description;
+
+	var str = "> 🕐"+x+"Debut : "+moment(value.start).calendar()+"\n"+
 				timer+
-				"> ```"+value.description.trim().replaceAll("\n", "\n> ")+"```"+
-				"\n> 🕐  Fin :		"+moment(value.end).calendar()+
-				"\n➖➖➖➖➖➖➖➖➖➖➖➖➖\n\n";
-	
+				"> ```"+description.trim().replaceAll("\n", "\n> ")+"```"+
+				"\n> 🕐Fin : "+moment(value.end).calendar()+
+				"\n▪️▪️▪️▪️▪️▪️▪️▪️▪️▪️▪️▪️\n\n";
+
 	return str;
 }
 
 
 /*
-🕐  Debut :        Aujourd’hui à 08:30
-⏳  Timer :        [===>     ]
-> Matière : LV1 - Anglais
+> 🕐Debut : Aujourd’hui à 08:30
+> ⏳Timer : [===>     ] 40%
+> ```Matière : LV1 - Anglais
 > Enseignant : ALI
 > Promotions : BTS SIO SISR 2, BTS SIO SLAM 2
-> Salle : 1er étage - MADRID
-
-🕐  Fin :        Aujourd’hui à 10:30
+> Salle : 1er étage - MADRID```
+> 🕐Fin : Aujourd’hui à 10:30
 ➖➖➖➖➖➖➖➖➖➖➖➖➖
+```DIFF
++ 🔄 Mise à jour : Aujourd’hui à 02:04
+```
+
+```CS
+V2.7.2 (27 sept. 2021)```
 */
 
 function deleteMsg(message) {
 	message.delete({ timeout: 1 }).catch(console.error);
 	return 1
+}
+
+function refreshRate() {
+	var rtn = 0;
+	if (moment().toDate() <= moment().startOf('week').add(2, 'days').toDate()) {
+		rtn = 15; // 15 minutes
+	} else {
+		rtn = 120; // 120 minutes = 2H
+	}
+
+	console.log(rtn);
+	return rtn*60*1000;
 }
 
 function dateToString(date) {
@@ -335,6 +359,24 @@ function dateToString(date) {
 	let year = date_ob.getFullYear();
 
 	return year +"-"+ month +"-"+ day;
+}
+
+function displayVersion() {
+	var data = fs.readFileSync('./versions.json'), myObj;
+	var { version, dateversion } = "";
+
+	try {
+		myObj = JSON.parse(data);
+
+		version = myObj.version;
+		dateversion = myObj.date;
+
+	} catch (err) {
+		console.log('Error parsing your JSON. => "./versions.json"');
+		console.log(err);
+	}
+
+	return {version, dateversion};
 }
 
 (function(){

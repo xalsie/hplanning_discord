@@ -12,8 +12,17 @@ $/> !planning {slam/sisr/all}
 
 ```
 $/> !first
-$/> !uuid {slam/sisr/all} {uuid}
+$/> !uuid {slam/sisr} {uuid}
 ```
+
+## Version V2.7.2 (27 sept. 2021)
+
+-  [x] Ajout progression du cours
+-  [x] Ajout numéro de version dans le message
+-  [x] FIX erreur sur la taille du message
+-  [x] FIX parametre de commande en minuscule
+-  [x] Vérifier si hyperplanning indisponnible
+-  [x] Afficher en rouge les cours reporté/Annulé
 
 ## Version 0.2.0 (23 sept. 2021)
 
@@ -35,7 +44,3 @@ $/> !uuid {slam/sisr/all} {uuid}
 -  [x] Channel séparer avec message différent SLAM/SISR
 -  [x] uuid message/channel sauvegarder apres reboot
 -  [x] Style message iPhone/Android/Bureau
-
-#### Connection requête : ne pas arrêter le bot
-
--  [x] Vérifier si hyperplanning indisponnible
