@@ -30,7 +30,6 @@ var endNextWeek = moment().week(Number.parseInt(moment().format('W'))+1).startOf
 // ______________________
 
 const { prefix, token } = require('./config.json');
-const { exit } = require('process');
 
 var data = fs.readFileSync('./uuidMessages.json'), myObj;
 	var { uuid_slam, uuid_sisr, uuid_dev, channel_slam, channel_sisr, channel_dev } = "";
@@ -97,10 +96,6 @@ client.on('message', async message => {
 	// ##################
 
 	let args = message.content.split(" ");
-
-	if (args[0].toLowerCase() == `${prefix}2`) {
-		functtestte();
-	}
 
 	if (args[0].toLowerCase() == `${prefix}first`) {
 		deleteMsg(message);
@@ -304,7 +299,7 @@ function msgFormating(value) {
 		strBarTime = strBarTime.replace(" ", "=");
 	}
 
-	var timer = ((moment() >= moment(value.start)) && (moment() <= moment(value.end)))? "> ⏳Timer: ["+strBarTime.replace(" ", ">")+"] "+Math.round(percentage_rounded*10)+"%\n":"";
+	var timer = ((moment() >= moment(value.start)) && (moment() <= moment(value.end)))? "> ⏳Timer: ["+strBarTime.replace(" ", ">")+"] "+Math.round((percentage_rounded+1)*10)+"%\n":"";
 
 	var description = (value.description.trim().toLowerCase().includes("report") || value.description.trim().toLowerCase().includes("annulé"))? "DIFF\n- "+value.description.replaceAll("\n", "\n- "):value.description;
 

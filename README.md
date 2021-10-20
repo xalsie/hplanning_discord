@@ -15,7 +15,11 @@ $/> !first
 $/> !uuid {slam/sisr} {uuid}
 ```
 
-## Version V2.7.2 (27 sept. 2021)
+## Version V2.7.5 (20 octo. 2021)
+
+-  [x] FIX pourcentage du cours
+
+## Version V2.7.4 (27 sept. 2021)
 
 -  [x] Ajout progression du cours
 -  [x] Ajout numéro de version dans le message
