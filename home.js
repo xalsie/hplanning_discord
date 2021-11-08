@@ -242,21 +242,21 @@ async function displayMsg(message, arrayGenerate, param) {
 	var rtnVersion = displayVersion();
 
 	// console.log(arrayGenerate);
-	var planning = "**```FIX\nCours du "+moment((moment().toDate() < moment(endWeek).add(1, 'days'))? startWeek:startNextWeek).format("dddd DD MMMM")+":```**\n";
+	var planning = "**```FIX\nCours du "+moment((moment().toDate() < moment(endWeek).add(1, 'days'))? startWeek:startNextWeek).format("dddd DD MMMM")+" :```**\n";
 
 		arrayGenerate[0].forEach((value, key) => {
 			planning += msgFormating(value);
 		})
 
-	planning += "\n**```FIX\nCours du "+moment((moment().toDate() < moment(endWeek).add(1, 'days'))? endWeek:endNextWeek).format("dddd DD MMMM")+":```**\n";
+	planning += "\n**```FIX\nCours du "+moment((moment().toDate() < moment(endWeek).add(1, 'days'))? endWeek:endNextWeek).format("dddd DD MMMM")+" :```**\n";
 
 		arrayGenerate[1].forEach((value, key) => {
 			planning += msgFormating(value);
 		})
 
-	planning += "```DIFF\n+ 🔄Mise à jour: "+moment().calendar()+"```";
+	planning += "```DIFF\n+ 🔄Mise à jour : "+moment().format('llll')+"```";
 
-	planning += "\n\n```CS\nV"+rtnVersion.version+" ("+rtnVersion.dateversion+")```";
+	planning += "\n```CS\nV"+rtnVersion.version+" ("+rtnVersion.dateversion+")```";
 
 	var uuidParam = "";
 	switch(param){
@@ -299,27 +299,27 @@ function msgFormating(value) {
 		strBarTime = strBarTime.replace(" ", "=");
 	}
 
-	var timer = ((moment() >= moment(value.start)) && (moment() <= moment(value.end)))? "> ⏳Timer: ["+strBarTime.replace(" ", ">")+"] "+Math.round((percentage_rounded+1)*10)+"%\n":"";
+	var timer = ((moment() >= moment(value.start)) && (moment() <= moment(value.end)))? "> ⏳Timer : ["+strBarTime.replace(" ", ">")+"] "+Math.round((percentage_rounded+1)*10)+"%\n":"";
 
 	var description = (value.description.trim().toLowerCase().includes("report") || value.description.trim().toLowerCase().includes("annulé"))? "DIFF\n- "+value.description.replaceAll("\n", "\n- "):value.description;
 
-	var str = "> 🕐"+x+"Debut : "+moment(value.start).calendar()+"\n"+
+	var str = "> 🕐｜"+x+"Debut : "+moment(value.start).format('LT')+"\n"+
 				timer+
-				"> ```"+description.trim().replaceAll("\n", "\n> ")+"```"+
-				"\n> 🕐Fin : "+moment(value.end).calendar()+
-				"\n▪️▪️▪️▪️▪️▪️▪️▪️▪️▪️▪️▪️\n\n";
+				"> ```"+description.trim().replaceAll(" : ", ": ").replaceAll("\n", "\n> ")+"```"+
+				"\n> 🕐｜Fin : "+moment(value.end).format('LT')+
+				// "\n▪️▪️▪️▪️▪️▪️▪️▪️▪️▪️▪️\n\n";
+				"\n> ——————————————————————\n\n";
 
 	return str;
 }
 
-
 /*
 > 🕐Debut : Aujourd’hui à 08:30
 > ⏳Timer : [===>     ] 40%
-> ```Matière : LV1 - Anglais
-> Enseignant : ALI
-> Promotions : BTS SIO SISR 2, BTS SIO SLAM 2
-> Salle : 1er étage - MADRID```
+> ```Matière: LV1 - Anglais
+> Enseignant: ALI
+> Promotions: BTS SIO SISR 2, BTS SIO SLAM 2
+> Salle: 1er étage - MADRID```
 > 🕐Fin : Aujourd’hui à 10:30
 ➖➖➖➖➖➖➖➖➖➖➖➖➖
 ```DIFF
@@ -332,7 +332,7 @@ V2.7.2 (27 sept. 2021)```
 
 function deleteMsg(message) {
 	message.delete({ timeout: 1 }).catch(console.error);
-	return 1
+	return 1;
 }
 
 function refreshRate() {
