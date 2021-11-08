@@ -181,7 +181,7 @@ client.on('message', async message => {
 client.on('messageReactionAdd', async (_reaction, user) => {
 	console.log(`${user.username} reacted with "${_reaction.emoji.name}".`);
 
-	if (user.id === "888354278043947038") {
+	if (user.id === "888354278043947038" || user.id === "884429785802092574") {
 		return 1;
 	}
 
