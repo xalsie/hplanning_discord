@@ -14,6 +14,9 @@ $/> !planning {slam/sisr/all}
 $/> !first
 $/> !uuid {slam/sisr} {uuid}
 ```
+## Version V2.7.7 (8 nov. 2021)
+
+-  [X] ADD reaction to update planning
 
 ## Version V2.7.5 (20 octo. 2021)
 

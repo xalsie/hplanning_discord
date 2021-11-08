@@ -5,7 +5,7 @@ const fs = require('fs');
 // ### import discord.js
 const { Client, Permissions} = require('discord.js');
 const permissions = new Permissions(8);
-const client = new Client();
+const client = new Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 // ### import ical
 const ical = require('node-ical');
 // ### import axios
@@ -96,6 +96,12 @@ client.on('message', async message => {
 	// ##################
 
 	let args = message.content.split(" ");
+		if (args.length == 1) {
+			console.log(args);
+			console.log("Error: Parametre Invalide.");
+			deleteMsg(message);
+			return 1;
+		}
 
 	if (args[0].toLowerCase() == `${prefix}first`) {
 		deleteMsg(message);
@@ -105,6 +111,19 @@ client.on('message', async message => {
 
 	if (args[0].toLowerCase() === `${prefix}uuid`) {
 		deleteMsg(message);
+
+		client.channels.fetch(message.channel.id).then((channel) => {
+			console.log(channel.name +" - "+ channel.id);
+
+			channel.messages.fetch({around: args[2], limit: 1}).then(messages => {
+				messages.forEach(async message => {
+					await message.react('🔄');
+				})
+			}).catch((err) => {
+				console.log('Not message found in : '+args[2]);
+				console.log(err);
+			});
+		});
 
 		switch(args[1].toUpperCase()){
 			case "SLAM":
@@ -157,6 +176,23 @@ client.on('message', async message => {
 				break;
 		}
 	}
+});
+
+client.on('messageReactionAdd', async (_reaction, user) => {
+	console.log(`${user.username} reacted with "${_reaction.emoji.name}".`);
+
+	if (user.id === "888354278043947038") {
+		return 1;
+	}
+
+	_reaction.users.remove(user.id);
+
+	// Decommente For DEV
+	//	getIcal("", "DEV");
+
+	// Decomment For Prod
+		getIcal("", "SLAM");
+		getIcal("", "SISR");
 });
 
 client.login(token);
@@ -254,7 +290,7 @@ async function displayMsg(message, arrayGenerate, param) {
 			planning += msgFormating(value);
 		})
 
-	planning += "```DIFF\n+ 🔄Mise à jour : "+moment().format('llll')+"```";
+	planning += "```DIFF\n+ 🔄｜Mise à jour : "+moment().format('llll')+"```";
 
 	planning += "\n```CS\nV"+rtnVersion.version+" ("+rtnVersion.dateversion+")```";
 
@@ -281,6 +317,10 @@ async function displayMsg(message, arrayGenerate, param) {
 		.then(msg => {
 			const fetchedMsg = msg.first();
 			fetchedMsg.edit(planning);
+
+			msg.forEach(async message => {
+				await message.react('🔄');
+			})
 		}).catch((err) => {
 			console.log('Not message found in : '+channel.name);
 			console.log(err);
@@ -308,7 +348,7 @@ function msgFormating(value) {
 				"> ```"+description.trim().replaceAll(" : ", ": ").replaceAll("\n", "\n> ")+"```"+
 				"\n> 🕐｜Fin : "+moment(value.end).format('LT')+
 				// "\n▪️▪️▪️▪️▪️▪️▪️▪️▪️▪️▪️\n\n";
-				"\n> ——————————————————————\n\n";
+				"\n> ———————————————————\n\n";
 
 	return str;
 }
