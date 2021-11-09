@@ -29,7 +29,7 @@ var startNextWeek = moment().week(Number.parseInt(moment().format('W'))+1).start
 var endNextWeek = moment().week(Number.parseInt(moment().format('W'))+1).startOf('week').add(1, 'days').toDate();
 // ______________________
 
-const { prefix, token } = require('./config.json');
+const { prefix, releasePub, token } = require('./config.json');
 
 var data = fs.readFileSync('./uuidMessages.json'), myObj;
 	var { uuid_slam, uuid_sisr, uuid_dev, channel_slam, channel_sisr, channel_dev } = "";
@@ -54,18 +54,19 @@ var data = fs.readFileSync('./uuidMessages.json'), myObj;
 
 client.on('ready', () => {
 	console.log("BOT startup : "+moment().format('LTS'));
+	console.log("	Version publier : "+releasePub);
 
 	var x = false;
 	if ((moment().format('LTS') >= moment("20210920T113000Z").format('LTS')) && (moment().format('LTS') <= moment("20210920T130000Z").format('LTS'))) {
 		x = true;
 	}
 
-	console.log("#########################"+moment().format('LTS'));
-	console.log("#########"+moment("20210920T113000Z").format('LTS'));
-	console.log("#########"+moment("20210920T130000Z").format('LTS'));
-	console.log(x);
+	// console.log("#########################"+moment().format('LTS'));
+	// console.log("#########"+moment("20210920T113000Z").format('LTS'));
+	// console.log("#########"+moment("20210920T130000Z").format('LTS'));
+	// console.log(x);
 
-	console.log(`Logged in as ${client.user.tag}!`);
+	console.log(`\nLogged in as ${client.user.tag}!`);
 });
 
 (function loop(){
@@ -113,7 +114,7 @@ client.on('message', async message => {
 		deleteMsg(message);
 
 		client.channels.fetch(message.channel.id).then((channel) => {
-			console.log(channel.name +" - "+ channel.id);
+			// console.log(channel.name +" - "+ channel.id);
 
 			channel.messages.fetch({around: args[2], limit: 1}).then(messages => {
 				messages.forEach(async message => {
@@ -158,7 +159,7 @@ client.on('message', async message => {
 	if (args[0].toLowerCase() === `${prefix}planning` || args[0].toLowerCase() === `${prefix}1`) {
 		deleteMsg(message);
 
-		console.log(args);
+		// console.log(args);
 
 		switch(args[1].toUpperCase()){
 			case "SLAM":
@@ -179,7 +180,7 @@ client.on('message', async message => {
 });
 
 client.on('messageReactionAdd', async (_reaction, user) => {
-	console.log(`${user.username} reacted with "${_reaction.emoji.name}".`);
+	// console.log(`${user.username} reacted with "${_reaction.emoji.name}".`);
 
 	if (user.id === "888354278043947038" || user.id === "884429785802092574") {
 		return 1;
@@ -187,12 +188,12 @@ client.on('messageReactionAdd', async (_reaction, user) => {
 
 	_reaction.users.remove(user.id);
 
-	// Decommente For DEV
-	//	getIcal("", "DEV");
-
-	// Decomment For Prod
+	if (releasePub == 1) {
 		getIcal("", "SLAM");
 		getIcal("", "SISR");
+	} else {
+		getIcal("", "DEV");
+	}
 });
 
 client.login(token);
