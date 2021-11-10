@@ -97,20 +97,16 @@ client.on('message', async message => {
 	// ##################
 
 	let args = message.content.split(" ");
-		if (args.length == 1) {
-			console.log(args);
-			console.log("Error: Parametre Invalide.");
-			deleteMsg(message);
-			return 1;
-		}
 
 	if (args[0].toLowerCase() == `${prefix}first`) {
+		if (countParam(message, args, 0)) return 1;
 		deleteMsg(message);
 
 		message.channel.send('Calendrier de Lundi & Mardi !');
 	}
 
 	if (args[0].toLowerCase() === `${prefix}uuid`) {
+		if (countParam(message, args, 2)) return 1;
 		deleteMsg(message);
 
 		client.channels.fetch(message.channel.id).then((channel) => {
@@ -157,6 +153,7 @@ client.on('message', async message => {
 	}
 
 	if (args[0].toLowerCase() === `${prefix}planning` || args[0].toLowerCase() === `${prefix}1`) {
+		if (!countParam(message, args, 1)) return 1;
 		deleteMsg(message);
 
 		// console.log(args);
@@ -200,6 +197,22 @@ client.login(token);
 
 // ######################
 // ### start fonction ###
+
+async function countParam(message, param, length) {
+	if (param.length < length) {
+		console.log(param);
+		console.log("Error: Nombre de parametre invalide.");
+
+		replyData = await message.reply("Error: Nombre de parametre invalide.");
+
+		replyData.delete({ timeout: 1000 })
+			.then(msg => console.log(`Deleted message from ${msg.author.username} after 500 miliseconde`))
+			.catch(console.error);
+
+		return 0;
+	}
+	return 1;
+}
 
 function getIcal(message, params) {
 	var ical_slam = "http://intranet.ensup.eu/hp-cgy/Telechargements/ical/Edt_GIARD.ics?version=2020.0.6.2&idICal=17C2294687BBF9496C18EF062FDFC449&param=643d5b312e2e36325d2666683d3126663d31";
