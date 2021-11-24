@@ -14,6 +14,16 @@ $/> !planning {slam/sisr/all}
 $/> !first
 $/> !uuid {slam/sisr} {uuid}
 ```
+## Version V2.8.0 (24 nov. 2021)
+
+-  [X] ADD random picture NSFW in chan 'Pause'
+-  [X] FIX refresh rate outside working hours
+-  [X] FIX empty command parameter
+-  [X] FIX message reaction
+-  [X] FIX UI design
+-  [X] FIX description calendar reporter/annulé
+-  [X] FIX sortby function outsource
+
 ## Version V2.7.7 (8 nov. 2021)
 
 -  [X] ADD reaction to update planning

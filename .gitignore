@@ -19,5 +19,8 @@ config.json
 # Dev folder
 Dev/*
 
+# Dev files
+writeOut.js
+
 # Icon
 icons/logo-hyperplanning - DEV.png
