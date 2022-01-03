@@ -72,7 +72,7 @@ client.on('ready', () => {
 
 (function loop(){
 	setTimeout(function() {
-		getIcal("", "DEV");
+		// getIcal("", "DEV");
 		getIcal("", "SLAM");
 		getIcal("", "SISR");
 	   loop();
@@ -211,6 +211,50 @@ async function countParam(message, param, length) {
 		return 0;
 	}
 	return 1;
+}
+
+function deleteMsg(message) {
+	message.delete({ timeout: 1 }).catch(console.error);
+	return 1;
+}
+
+function displayVersion() {
+	var data = fs.readFileSync('./versions.json'), myObj;
+	var { version, dateversion } = "";
+
+	try {
+		myObj = JSON.parse(data);
+
+		version = myObj.version;
+		dateversion = myObj.date;
+
+	} catch (err) {
+		console.log('Error parsing your JSON. => "./versions.json"');
+		console.log(err);
+	}
+
+	return {version, dateversion};
+}
+
+function dateToString(date) {
+	var date_ob = new Date(date);
+	let day = date_ob.getDate();
+	let month = date_ob.getMonth() + 1;
+	let year = date_ob.getFullYear();
+
+	return year +"-"+ month +"-"+ day;
+}
+
+function refreshRate() {
+	var rtn = 0;
+	if (moment().toDate() <= moment().startOf('week').add(2, 'days').toDate() && (moment().toDate() > startHourDay || moment().toDate() < endHourDay)) {
+		rtn = 2; // 15 minutes
+	} else {
+		rtn = 120; // 120 minutes = 2H
+	}
+
+	console.log(rtn);
+	return rtn*60*1000;
 }
 
 function getIcal(message, params) {
@@ -360,50 +404,6 @@ function msgFormating(value) {
 				"\n> ———————————————————\n\n";
 
 	return str;
-}
-
-function deleteMsg(message) {
-	message.delete({ timeout: 1 }).catch(console.error);
-	return 1;
-}
-
-function refreshRate() {
-	var rtn = 0;
-	if (moment().toDate() <= moment().startOf('week').add(2, 'days').toDate() && (moment().toDate() > startHourDay || moment().toDate() < endHourDay)) {
-		rtn = 15; // 15 minutes
-	} else {
-		rtn = 120; // 120 minutes = 2H
-	}
-
-	console.log(rtn);
-	return rtn*60*1000;
-}
-
-function dateToString(date) {
-	var date_ob = new Date(date);
-	let day = date_ob.getDate();
-	let month = date_ob.getMonth() + 1;
-	let year = date_ob.getFullYear();
-
-	return year +"-"+ month +"-"+ day;
-}
-
-function displayVersion() {
-	var data = fs.readFileSync('./versions.json'), myObj;
-	var { version, dateversion } = "";
-
-	try {
-		myObj = JSON.parse(data);
-
-		version = myObj.version;
-		dateversion = myObj.date;
-
-	} catch (err) {
-		console.log('Error parsing your JSON. => "./versions.json"');
-		console.log(err);
-	}
-
-	return {version, dateversion};
 }
 // ### end fonction ###
 // ####################

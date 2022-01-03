@@ -120,6 +120,29 @@ async function countParam(message, param, length) {
 	return 1;
 }
 
+function deleteMsg(message) {
+	message.delete({ timeout: 1 }).catch(console.error);
+	return 1;
+}
+
+function displayVersion() {
+	var data = fs.readFileSync('./versions.json'), myObj;
+	var { version, dateversion } = "";
+
+	try {
+		myObj = JSON.parse(data);
+
+		version = myObj.version;
+		dateversion = myObj.date;
+
+	} catch (err) {
+		console.log('Error parsing your JSON. => "./versions.json"');
+		console.log(err);
+	}
+
+	return {version, dateversion};
+}
+
 function addReactToJson(user, react) {
 	var dataNsfw = fs.readFileSync('./nsfwStat.json'), myObjNsfw;
 	var { userUuid, userStat, userName} = "";
