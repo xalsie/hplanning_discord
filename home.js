@@ -3,7 +3,7 @@
 // ### import write/read file
 	const fs = require('fs');
 // ### import discord.js
-	const { Client, Permissions} = require('discord.js');
+	const { Client, Permissions, MessageEmbed} = require('discord.js');
 	const permissions = new Permissions(8);
 	const client = new Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 // ### import ical
@@ -15,8 +15,6 @@
 	moment.locale('fr');
 // ### import sortby - sort table order
 	require("./sortBy.js");
-// ## import reddit-wrapper-v2 class
-	var RedditAPI = require('reddit-wrapper-v2');
 // ### end import ###
 // ##################
 
@@ -36,7 +34,8 @@
 	var endNextWeek = moment().week(Number.parseInt(moment().format('W'))+1).startOf('week').add(1, 'days').toDate();
 // ______________________
 
-const { prefix, releasePub, token, reddit } = require('./config.json');
+const {bot_1, reddit} = require('./config.json');
+	const {prefix, releasePub, token} = bot_1;
 
 var data = fs.readFileSync('./uuidMessages.json'), myObj;
 	var { uuid_slam, uuid_sisr, uuid_dev, channel_slam, channel_sisr, channel_dev } = "";
@@ -68,7 +67,7 @@ client.on('ready', () => {
 		x = true;
 	}
 
-	console.log(`\nLogged in as ${client.user.tag}!`);
+	console.log(`\nBot 1 -> Logged in as ${client.user.tag}!`);
 });
 
 (function loop(){
@@ -79,13 +78,6 @@ client.on('ready', () => {
 	   loop();
    }, refreshRate());
 })();
-
-// (function loop(){
-// 	setTimeout(function() {
-// 		getRedditPicture();
-// 	   loop();
-//    }, 15*60*1000);
-// })();
 
 client.on('message', async message => {
 
@@ -177,16 +169,10 @@ client.on('message', async message => {
 				break;
 		}
 	}
-
-	if (args[0].toLowerCase() == `${prefix}nsfw`) {
-		deleteMsg(message);
-
-		getRedditPicture();
-	}
 });
 
 client.on('messageReactionAdd', async (_reaction, user) => {
-	if (user.id === "888354278043947038" || user.id === "884429785802092574") {
+	if (user.id === "888354278043947038" || user.id === "884429785802092574" || user.id === "923238213768863835") {
 		return 1;
 	}
 
@@ -201,12 +187,7 @@ client.on('messageReactionAdd', async (_reaction, user) => {
 				getIcal("", "DEV");
 			}
 			break;
-		case '➕':
-			_reaction.users.remove(user.id);
 
-			getRedditPicture();
-			break;
-	
 		default:
 			break;
 	}
@@ -233,8 +214,8 @@ async function countParam(message, param, length) {
 }
 
 function getIcal(message, params) {
-	var ical_slam = "http://intranet.ensup.eu/hp-cgy/Telechargements/ical/Edt_GIARD.ics?version=2020.0.6.2&idICal=17C2294687BBF9496C18EF062FDFC449&param=643d5b312e2e36325d2666683d3126663d31";
-	var ical_sisr = "http://intranet.ensup.eu/hp-cgy/Telechargements/ical/Edt_AUBIER.ics?version=2020.0.6.2&idICal=8EC1F79FA3078CD54C9BDB637DEFFB07&param=643d5b312e2e36325d2666683d3126663d31";
+	var ical_slam = "http://intranet.ensup.eu/hp-cgy/Telechargements/ical/Edt_GIARD.ics?idICal=17C2294687BBF9496C18EF062FDFC449";
+	var ical_sisr = "http://intranet.ensup.eu/hp-cgy/Telechargements/ical/Edt_AUBIER.ics?idICal=8EC1F79FA3078CD54C9BDB637DEFFB07";
 	var channel_reply_ical_dev = '884434008950333550';
 	var channel_reply_ical_slam = "886949854323032064";
 	var channel_reply_ical_sisr = "886949885235068978";
@@ -269,11 +250,8 @@ function parseIcsDirectly(DataIcs, message, param, idChannel) {
 	var arrayMardi = new Array();
 
 	ical.async.parseICS(DataIcs, function(err, data) {
-		// console.log(data);
 		Object.values(data).forEach(function(elems, idxs) {
 			Object.keys(elems).forEach(function(elem, idx) {
-				// console.log(idx +" : "+ elem);
-
 				if (elem == "start") {
 					if (moment().toDate() < moment(endWeek).add(1, 'days')) {
 						if (dateToString(elems["start"]) == dateToString(startWeek))
@@ -293,8 +271,14 @@ function parseIcsDirectly(DataIcs, message, param, idChannel) {
 		arrayLundi.sortBy(function(o){ return new Date( o.start )});
 		arrayMardi.sortBy(function(o){ return new Date( o.start )});
 
-		var startHourDay = new Date(arrayLundi[0].start);
-		var endHourDay = new Date(arrayLundi[(arrayLundi.length - 1)].end);
+		try {
+			var startHourDay = new Date(arrayLundi[0].start);
+			var endHourDay = new Date(arrayLundi[(arrayLundi.length - 1)].end);
+		} catch (e) {
+			console.log("arrayLundi : empty");
+			var startHourDay = false;
+			var endHourDay = false;
+		}
 
 		displayMsg(message, [arrayLundi, arrayMardi], param);
 	});
@@ -318,7 +302,6 @@ async function displayMsg(message, arrayGenerate, param) {
 		})
 
 	planning += "```DIFF\n+ 🔄｜Mise à jour : "+moment().format('llll')+"```";
-
 	planning += "\n```CS\nV"+rtnVersion.version+" ("+rtnVersion.dateversion+")```";
 
 	var uuidParam = "";
@@ -421,74 +404,6 @@ function displayVersion() {
 	}
 
 	return {version, dateversion};
-}
-
-function getRedditPicture() {
-	var redditConn = new RedditAPI({
-	    // Options for Reddit Wrapper
-		username: reddit.username,
-		password: reddit.password,
-	    app_id: reddit.app_id,
-	    api_secret: reddit.api_secret,
-	    user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36',
-			retry_on_wait: true,
-			retry_on_server_error: 5,
-			retry_delay: 1,
-			logs: true
-	});
-
-	// gets an api token
-	redditConn.api.get_token()
-		.then(function(results) {
-			let token = results[0];
-			token.should.be.ok();
-			done();
-		})
-		.catch(function(err) {});
-
-	redditConn.api.get('/r/nsfw/random', {
-			limit: 1,
-		})
-		.then(function(response) {
-
-			response[1].forEach(function(elem, idx) {
-				let link = elem.data.children[0].data;
-
-				if (link.domain == 'redgifs.com') {
-					getRedditPicture();
-					return;
-				}
-
-				if (link.url) postMessage(link.url);
-			
-			});
-		})
-		.catch(function(err) {
-			console.log("Error getting picture: ", err);
-		})
-}
-
-function postMessage(url) {
-	let uuidDev = '912793714638848110';
-	let uuidProd = '912375379963035698';
-	let uuid = 0;
-
-	switch(releasePub) {
-		case 0:
-			uuid = uuidDev;
-		break;
-		case 1:
-			uuid = uuidProd;
-		break;
-	}
-
-	client.channels.cache.get(uuid).send("⬇️｜|| "+ url +" ||｜⬇️")
-		.then(function (message) {
-			message.react('➕')
-			message.react('👎')
-			message.react('👍')
-			message.react('❤')
-		});
 }
 // ### end fonction ###
 // ####################
