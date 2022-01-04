@@ -15,6 +15,7 @@ jspm_packages/
 
 # Config file
 config.json
+configCompta.json
 nsfwStat.json
 
 # Dev folder
