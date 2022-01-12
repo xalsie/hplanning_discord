@@ -14,6 +14,7 @@ jspm_packages/
 .npm
 
 # Config file
+main.js
 config.json
 configCompta.json
 nsfwStat.json

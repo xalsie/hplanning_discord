@@ -34,7 +34,7 @@
 	var endNextWeek = moment().week(Number.parseInt(moment().format('W'))+1).startOf('week').add(1, 'days').toDate();
 // ______________________
 
-const {bot_1, reddit} = require('./config.json');
+const {bot_1} = require('./config.json');
 	const {prefix, releasePub, token} = bot_1;
 
 var data = fs.readFileSync('./uuidMessages.json'), myObj;
