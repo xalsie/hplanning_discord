@@ -1,15 +1,1 @@
-{
-	"list":{
-		"3":{
-			"argent_propre":"18000",
-			"argent_sale":"9050"
-		},
-		"2": {
-			"1": {
-				"icone": "❓",
-				"NameGroupe": "———",
-				"Dollars": 0
-			}
-		}
-	}
-}
+{"list":{"2":{"1":{"icone":"❓","NameGroupe":"———","Dollars":"333"},"2":{"icone":"💰","NameGroupe":"Ballas","Dollars":"30000"}},"3":{"argent_propre":"5000","argent_sale":"40000"},"4":{"1":{"countItems":"0","nameItems":"Armes"}},"5":{"1":{"countItems":"0","nameItems":"Armes"}},"6":{"1":{"countItems":"0","nameItems":"Armes"}}}}

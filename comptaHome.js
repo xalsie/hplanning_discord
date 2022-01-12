@@ -65,16 +65,14 @@ client.on('message', async message => {
 
 		switch (args[1]) {
 			case 'add':
-				myObj.list[3].argent_propre = args[2];
+				let arr = {"icone": args[2], "NameGroupe": args[3], "Dollars": args[4]};
 
-				myObj.list[2]
-
-				console.log(myObj.list[3].argent_propre);
-				console.log(args[2]);
-
+				let lastIndex = parseInt(Object.keys(myObj.list[2])[Object.keys(myObj.list[2]).length-1])+1;
+				
+				myObj.list[2][lastIndex] = arr;
 				break;
 			case 'del':
-				myObj.list[3].argent_sale = args[2];
+				// myObj.list[3].argent_sale = args[2];
 				break;
 			default:
 				break;
@@ -320,9 +318,14 @@ function section4() {
 	// !!4 del nameItems
 
 	let dataMsg = 	"> 🔫｜**4**｜__**Armes en stock :**__\n"+
-					"> ```JSON\n"+
-					"> 0   ｜Armes\n"+
-					"> ```";
+					"> ```JSON\n";
+
+	for (element in myObj.list[4]) {
+		dataMsg += 	"> "+myObj.list[4][element].countItems.padEnd(5)+
+					"｜"+myObj.list[4][element].nameItems+"\n";
+	}
+
+	dataMsg += 		"> ```";
 
 	return dataMsg;
 }
@@ -334,9 +337,14 @@ function section5() {
 	// !!5 del nameItems
 
 	let dataMsg = 	"> 🌱｜**5**｜__**Items drogues :**__\n"+
-					"> ```JSON\n"+
-					"> 0   ｜Items drogues\n"+
-					"> ```";
+					"> ```JSON\n";
+
+	for (element in myObj.list[5]) {
+		dataMsg += 	"> "+myObj.list[5][element].countItems.padEnd(5)+
+					"｜"+myObj.list[5][element].nameItems+"\n";
+	}
+
+	dataMsg += 		"> ```";
 
 	return dataMsg;
 }
@@ -348,9 +356,14 @@ function section6() {
 	// !!6 del nameItems
 
 	let dataMsg = 	"> 📦｜**6**｜__**Items :**__\n"+
-					"> ```CS\n"+
-					"> 0   ｜Items\n"+
-					"> ```";
+					"> ```JSON\n";
+
+	for (element in myObj.list[6]) {
+		dataMsg += 	"> "+myObj.list[6][element].countItems.padEnd(5)+
+					"｜"+myObj.list[6][element].nameItems+"\n";
+	}
+
+	dataMsg += 		"> ```";
 
 	return dataMsg;
 }
