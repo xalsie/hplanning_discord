@@ -68,7 +68,7 @@
                     <span class="fs-6 p-2">📚｜ComptaBot#7814 <span class="badge rounded-pill bg-primary small">BOT</span></span>
                 </a>
                 <hr>
-                <ul class="nav nav-pills flex-column mb-auto" ng-click="onClick($event)">
+                <ul class="nav nav-pills flex-column mb-auto" ng-click="onClick($event);">
                     <li class="nav-item">
                         <a href="#1" data-href="1" class="nav-link text-white" ng-class="{'active': sidenav == 1}" aria-current="page">
                         📈｜Blanchiment semaine
@@ -121,20 +121,55 @@
             <div class="flex-column p-5 container-fluid">
                 <h2>{{sectionTitle}}</h2>
                 <hr>
-                <div class="mb-2 g-4 justify-content-between align-items-center form-check-inline" ng-class="{'active': sidenav == 1 || sidenav == 2}">
+                <div class="mb-2 g-4 justify-content-between align-items-center form-check-inline" ng-class="{'active': sidenav == 1 || sidenav == 2 || sidenav == 3 || sidenav == 7}">
                     <div id="{{key}}" class="row p-1" ng-repeat="(key, value) in sectionData">
                         <div class="col d-inline-flex">
                             <tr>
                                 <td>
-                                    <span ng-show="edit != true">{{value.icone}}</span>
-                                    <input ng-show="edit" type="text" ng-model="value.icone" class="form-control p-1" placeholder="Name Icone">
+                                    <span ng-show="edit != true">{{value.Icone}}</span>
+                                    <input ng-show="edit" type="text" ng-model="value.Icone" class="form-control p-1" placeholder="Name Icone">
                                 </td>
                                 <td>
-                                    <span ng-show="edit != true">{{value.NameGroupe}}</span>
-                                    <input ng-show="edit" type="text" ng-model="value.NameGroupe" class="form-control p-1" placeholder="Name Groupe"></td>
+                                    <span ng-show="edit != true">{{value.Name}}</span>
+                                    <input ng-show="edit" type="text" max="20" ng-model="value.Name" class="form-control p-1" placeholder="Name Groupe"></td>
                                 <td>
-                                    <span ng-show="edit != true">{{convertNumber(value.Dollars)}}</span>
-                                    <input ng-show="edit" type="text" ng-model="value.Dollars" class="form-control p-1" placeholder="Dollars">
+                                    <span ng-show="edit != true">{{convertNumber(value.Cash)}}</span>
+                                    <input ng-show="edit" type="text" ng-model="value.Cash" class="form-control p-1" placeholder="Cash">
+                                </td>
+                            </tr>
+                        </div>
+
+                        <div class="col-auto align-self-end">
+                            <button ng-show="edit != true" type="button" class="btn btn-outline-primary" ng-click="edit = true; editLine({key})">✏｜Editer</button>
+                            <button ng-show="edit" type="button" class="btn btn-outline-success" ng-click="edit = false; saveLine({key}, value)">💾｜Enregistrer</button>
+                        </div>
+
+                        <div class="col-auto align-self-end">
+                          <button ng-show="editableLine" type="button" class="btn btn-outline-danger" ng-click="edit = false;">🗑｜Annuler</button>
+                          <button ng-show="editableLine != true" type="button" class="btn btn-outline-danger" ng-click="deleteLine({key})">🗑｜Supprimer</button>
+                        </div>
+                    </div>
+
+                    <div class="btn-toolbar justify-content-between mt-3" role="toolbar" aria-label="Toolbar with button groups">
+                        <div class="btn-group" role="group" aria-label="First group">
+                            <button ng-show="editableLine != true" type="button" class="btn btn-outline-primary" ng-click="addLine({key})">➕｜Ajouter</button>
+                        </div>
+                        <div class="btn-group" role="group" aria-label="First group">
+                            <button ng-show="btnSave" type="button" class="btn btn-outline-success" ng-click="saveJson({key})">💾｜Enregistrer</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col mb-2" ng-class="{'active': sidenav == 4 || sidenav == 5 || sidenav == 6}">
+                    <div id="{{key}}" class="row p-1" ng-repeat="(key, value) in sectionData">
+                        <div class="col d-inline-flex">
+                            <tr>
+                                <td>
+                                    <span ng-show="edit != true">{{value.countItems}}</span>
+                                    <input ng-show="edit" type="text" ng-model="value.countItems" class="form-control p-1" placeholder="Name Groupe"></td>
+                                <td>
+                                    <span ng-show="edit != true">{{value.nameItems}}</span>
+                                    <input ng-show="edit" type="text" ng-model="value.nameItems" class="form-control p-1" placeholder="Cash">
                                 </td>
                             </tr>
                         </div>
@@ -153,42 +188,8 @@
                         <div class="btn-group" role="group" aria-label="First group">
                           <button ng-show="editableLine != true" type="button" class="btn btn-outline-primary" ng-click="addLine({key})">➕｜Ajouter</button>
                         </div>
-                    </div>
-                </div>
-
-                <div class="col mb-2" ng-class="{'active': sidenav == 3}">
-                    <div id="{{key}}" class="row g-4 p-1 justify-content-between" ng-repeat="(key, value) in sectionData">
-                        <div class="col-auto">
-                            <button type="button" class="btn btn-outline-success">✏｜Editer</button>
-                        </div>
-                        <div class="col-auto">
-                            <p>{{::key}} - {{::convertNumber(value)}}</p>
-                        </div>
-                        <div class="col-auto">
-                          <button type="button" class="btn btn-outline-success">🗑｜Supprimer</button>
-                        </div>
-                    </div>
-
-                    <div class="btn-toolbar justify-content-between mt-3" role="toolbar" aria-label="Toolbar with button groups">
                         <div class="btn-group" role="group" aria-label="First group">
-                          <button type="button" class="btn btn-outline-primary">➕｜Ajouter</button>
-                        </div>
-                        <div class="btn-group" role="group" aria-label="First group">
-                            <button type="button" class="btn btn-outline-success">💾｜Enregistrer</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col mb-2" ng-class="{'active': sidenav == 4 || sidenav == 5 || sidenav == 6}">
-                    <div id="{{key}}" class="row g-4 p-1 justify-content-between" ng-repeat="(key, value) in sectionData">
-                        <div class="col-auto">
-                            <button type="button" class="btn btn-outline-success">✏｜Editer</button>
-                        </div>
-                        <div class="col-auto">
-                            <p>{{::value.countItems}} - {{::value.nameItems}}</p>
-                        </div>
-                        <div class="col-auto">
-                          <button type="button" class="btn btn-outline-success">🗑｜Supprimer</button>
+                            <button ng-show="btnSave" type="button" class="btn btn-outline-success" ng-click="saveJson({key})">💾｜Enregistrer</button>
                         </div>
                     </div>
                 </div>

@@ -29,7 +29,6 @@ const {bot_3} = require('./config.json');
 const {channelJson} = require('./configCompta.json');
 
 var list = fs.readFileSync('./compta.json'), myObj;
-	var { uuid_slam, uuid_sisr, uuid_dev, channel_slam, channel_sisr, channel_dev } = "";
 
 	try {
 		myObj = JSON.parse(list);
@@ -53,7 +52,7 @@ client.on('message', async message => {
 	if (args[0].toLowerCase() == `${prefix}compta`) {
 		deleteMsg(message)
 
-		displayMsg()
+		getMsgData()
 	}
 
 	if (args[0].toLowerCase() == `${prefix}2`) {
@@ -65,7 +64,7 @@ client.on('message', async message => {
 
 		switch (args[1]) {
 			case 'add':
-				let arr = {"icone": args[2], "NameGroupe": args[3], "Dollars": args[4]};
+				let arr = {"Icone": args[2], "Name": args[3], "Cash": args[4]};
 
 				let lastIndex = parseInt(Object.keys(myObj.list[2])[Object.keys(myObj.list[2]).length-1])+1;
 				
@@ -79,7 +78,7 @@ client.on('message', async message => {
 		}
 
 		saveConf(myObj, "./compta.json");
-		displayMsg(myObj)
+		getMsgData(myObj)
 	}
 
 	if (args[0].toLowerCase() == `${prefix}3`) {
@@ -104,7 +103,7 @@ client.on('message', async message => {
 		}
 
 		saveConf(myObj, "./compta.json");
-		displayMsg()
+		getMsgData()
 	}
 
 
@@ -118,7 +117,7 @@ client.on('messageReactionAdd', async (_reaction, user) => {
 	switch (_reaction._emoji.name) {
 		case '🔄':
 			_reaction.users.remove(user.id);
-				displayMsg();
+				getMsgData();
 			break;
 		default:
 			break;
@@ -129,48 +128,13 @@ client.login(token);
 
 // uuid channel compta -> 926369794863812729
 
-/*
-> 📈｜__**Blanchiment max semaine :**__
-> ```DIFF
-> ❓    ｜———         :   $ 0
-> ```
-> 🏦｜**En cas de dépassement voir avec la banque sinon il y auras des répercutions**
-———————————————————
-> 🧼｜__**Blanchiment en cours :**__
-> ```DIFF
-> ❓    ｜———         :   $ 0
-> ```
-———————————————————
-> 📝｜__**3 : Livre des comptes**__
-> ```DIFF
-> + 📋｜Compte The Saviors  :   $ 0
-> - 💰｜Argent Sale     	:   $ 0
-> ```
-———————————————————
-> 🔫｜__**Armes en stock :**__
-> ```JSON
-> 0    ｜Armes
-> ```
-———————————————————
-> 🌱｜__**Items drogues :**__
-> ```JSON
-> 0    ｜Items drogues
-> ```
-———————————————————
-> 📦｜__**Items :**__
-> ```CS
-> 0    ｜Items
-> ```
-———————————————————
-> 🏃‍♂️｜__**Argent qui devrait arriver sous peu :**__
-> ```DIFF
-> ❓    ｜———         :   $ 0
-> ```
-———————————————————
-```DIFF
-+ 🔄｜Mise à jour: 02/01 à 18:23
-```
-*/
+module.exports = {
+	refreshByWeb: function () {
+		getMsgData();
+	}
+};
+
+
 
 // ######################
 // ### start fonction ###
@@ -217,7 +181,19 @@ function saveConf(myObj, file) {
 	});
 }
 
-function displayMsg(myObj) {
+function getMsgData() {
+	try {
+		myObj = JSON.parse(fs.readFileSync('./compta.json'));
+		console.log(myObj);
+	} catch (err) {
+		console.log('There has been an error parsing your JSON.');
+		console.log(err);
+	}
+
+	toDisplayMsg();
+}
+
+function toDisplayMsg(myObj) {
 
 	var section_1 = section1();
 	var section_2 = section2();
@@ -268,9 +244,16 @@ function section1() {
 	// !!1 del idLine
 
 	let dataMsg = 	"> 📈｜**1**｜__**Blanchiment max semaine :**__\n"+
-					"> ```DIFF\n"+
-					"> ❓｜1 ｜———         :   $ 0\n"+
-					"> ```\n"+
+					"> ```DIFF\n";
+
+	for (element in myObj.list[1]) {
+		dataMsg += 	"> "+myObj.list[1][element].Icone+
+					"｜"+element.padEnd(2)+
+					"｜"+myObj.list[1][element].Name.padEnd(20)+
+					":   "+convertNumber(myObj.list[1][element].Cash)+"\n";
+	}
+
+	dataMsg +=		"> ```\n"+
 					"> **`🏦｜En cas de dépassement voir avec la banque sinon il y auras des répercutions`**";
 
 	return dataMsg;
@@ -286,10 +269,10 @@ function section2() {
 					"> ```DIFF\n";
 
 	for (element in myObj.list[2]) {
-		dataMsg += 	"> "+myObj.list[2][element].icone+
+		dataMsg += 	"> "+myObj.list[2][element].Icone+
 					"｜"+element.padEnd(2)+
-					"｜"+myObj.list[2][element].NameGroupe.padEnd(12)+
-					":   "+convertNumber(myObj.list[2][element].Dollars)+"\n";
+					"｜"+myObj.list[2][element].Name.padEnd(20)+
+					":   "+convertNumber(myObj.list[2][element].Cash)+"\n";
 	}
 
 	dataMsg +=		"> ```";
@@ -302,11 +285,23 @@ function section3() {
 	// Help commande
 	// !!3 idLine Dollars
 	
-	let dataMsg =	"> 📝｜**3**｜__**Livre des comptes**__\n"+
-					"> ```DIFF\n"+
-					"> + 📋｜1 ｜Compte The Saviors  :   "+convertNumber(myObj.list[3].argent_propre)+"\n"+
-					"> - 💰｜2 ｜Argent Sale         :   "+convertNumber(myObj.list[3].argent_sale)+"\n"+
-					"> ```";
+	// let dataMsg =	"> 📝｜**3**｜__**Livre des comptes**__\n"+
+	// 				"> ```DIFF\n"+
+	// 				"> + 📋｜1 ｜Compte The Saviors  :   "+convertNumber(myObj.list[3].argent_propre)+"\n"+
+	// 				"> - 💰｜2 ｜Argent Sale         :   "+convertNumber(myObj.list[3].argent_sale)+"\n"+
+	// 				"> ```";
+
+	let dataMsg = 	"> 📝｜**3**｜__**Livre des comptes**__\n"+
+					"> ```DIFF\n";
+
+	for (element in myObj.list[3]) {
+		dataMsg += 	"> "+myObj.list[3][element].Icone+
+					"｜"+element.padEnd(2)+
+					"｜"+myObj.list[3][element].Name.padEnd(20)+
+					":   "+convertNumber(myObj.list[3][element].Cash)+"\n";
+	}
+
+	dataMsg +=		"> ```";
 
 	return dataMsg;
 }
