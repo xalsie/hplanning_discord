@@ -17,12 +17,14 @@ jspm_packages/
 config.json
 configCompta.json
 nsfwStat.json
+authPass.json
 
 # Dev folder
 Dev/*
 
 # Dev files
 writeOut.js
+main.js
 
 # Icon
 icons/logo-hyperplanning - DEV.png

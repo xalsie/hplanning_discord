@@ -8,7 +8,7 @@
       $scope.onClick = (e) => {
         $scope.sidenav = e.target.attributes[1].value;
         $scope.sectionTitle = e.target.innerHTML;
-        $scope.getFromUrl($scope.sidenav);
+        if ($scope.sidenav != 8) $scope.getFromUrl($scope.sidenav);
       }
 
       $scope.getFromUrl = (e) => {
@@ -29,7 +29,8 @@
           url: "/savejson",
           dataType: 'json',
           data: {
-            action: JSON.stringify($scope.responseMap)
+            autofunc: true,
+            action: JSON.stringify($scope.responseMap),
           },
           headers: { "Content-Type": "application/json" }
         }).then(function (response) {
@@ -81,7 +82,6 @@
 
         let i = 1;
         for (let key of Object.keys($scope.sectionData)) {
-          console.log(i +" -"+ key);
           $scope.sectionData[i++] = $scope.sectionData[key];
         }
         delete $scope.sectionData[Object.keys($scope.sectionData).length]
@@ -106,15 +106,34 @@
         return _rtn;
       }
 
+      $scope.getSession = function() {
+        $http({
+          method: "POST",
+          url: "/getSession",
+          dataType: 'json',
+          data: {
+            autofunc: true
+          },
+          headers: { "Content-Type": "html/json" }
+        }).then(function (res) {
+          $scope.session    = res.data;
+          $scope.permission = ($scope.session.loggedin && $scope.session.permission == 1);
+        });
+      }
+
       $scope.convertNumber = (x) => {
         return "$ "+parseInt(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
       }
 
       // ############
       // Init
-      $scope.responseMap = $scope.editableLine = $scope.btnSave = false;
-      $scope.sidenav = 1;
+      $scope.responseMap  = $scope.editableLine = $scope.btnSave = false;
+      $scope.sectionData  = false;
+      $scope.permission   = false;
+      $scope.sidenav      = 1;
       $scope.sectionTitle = "📈｜Blanchiment semaine";
       $scope.getFromUrl($scope.sidenav);
+
+      $scope.getSession();
   }]);
 })(window.angular);

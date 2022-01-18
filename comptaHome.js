@@ -135,7 +135,6 @@ module.exports = {
 };
 
 
-
 // ######################
 // ### start fonction ###
 async function countParam(message, param, length) {
@@ -184,7 +183,7 @@ function saveConf(myObj, file) {
 function getMsgData() {
 	try {
 		myObj = JSON.parse(fs.readFileSync('./compta.json'));
-		console.log(myObj);
+		// console.log(myObj);
 	} catch (err) {
 		console.log('There has been an error parsing your JSON.');
 		console.log(err);

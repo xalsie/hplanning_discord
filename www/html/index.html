@@ -13,7 +13,7 @@
 
         <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         Compta - Bot Discord
-        Updated: 10/01/22
+        Updated: 18/01/22
         Theme by: LeGrizzly - LeGrizzly#0341
         Support: LeGrizzly#0341
          _                _____          _               _
@@ -37,6 +37,28 @@
         <!-- AngularJS Core -->
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
 
+        <!-- jQuery JS Core-->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+        <!-- jQuery JS UI Core -->
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+        <!-- SweetAlert2 -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.3.5/dist/sweetalert2.all.min.js"></script>
+
+        <!-- Bootstrap Table CSS -->
+        <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.19.1/dist/bootstrap-table.min.css">
+
+        <!-- Bootstrap Table JS -->
+        <script src="https://unpkg.com/bootstrap-table@1.19.1/dist/bootstrap-table.min.js"></script>
+
+        <!-- Bootstrap Icons CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+
+        <!-- Font Awesome CSS -->
+        <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v6.0.0-beta3/css/all.css">
+
         <!-- AngularJS Script-->
         <script src="/assets/js/app-angular.js"></script>
 
@@ -57,6 +79,15 @@
                 justify-content: space-around;
                 align-content: center;
                 align-items: center;
+            }
+            .swal2-html-container {
+                overflow: hidden !important;
+            }
+            button.swal2-cancel.btn.btn-secondary,
+            button.swal2-confirm.btn.btn-success,
+            button.btn.btn-primary.btn-xs.btn-edit,
+            button.swal2-confirm.btn.btn-warning {
+                margin-right: 15px;
             }
         </style>
 
@@ -104,12 +135,18 @@
                         🏃‍♂️｜Argent qui devrait arriver
                         </a>
                     </li>
+                    <hr ng-show="permission">
+                    <li ng-show="permission">
+                        <a href="#8" data-href="8" class="nav-link text-white" ng-class="{'active': sidenav == 8}">
+                        ⚙｜Gestion Utilisateurs
+                        </a>
+                    </li>
                 </ul>
                 <hr>
                 <div class="sb-sidenav-footer">
-                    <div class="small">Logged in as:</div> 📚｜ComptaBot#7814 <span class="badge rounded-pill bg-primary small">BOT</span>
+                    <div class="small">Logged in as:</div><div ng-cloak>{{::session.username}}</div>
                     <div style="margin-top: 10px;">
-                        <a class="btn btn-light btn-sm" href="#">
+                        <a class="btn btn-light btn-sm" href="/logout">
                         <i class="bi bi-box-arrow-left me-1"></i>
                         LogOut
                         </a>
@@ -118,7 +155,7 @@
             </div>
             <div class="b-example-divider"></div>
 
-            <div class="flex-column p-5 container-fluid">
+            <div class="flex-column p-5 container-fluid" ng-cloak>
                 <h2>{{sectionTitle}}</h2>
                 <hr>
                 <div class="mb-2 g-4 justify-content-between align-items-center form-check-inline" ng-class="{'active': sidenav == 1 || sidenav == 2 || sidenav == 3 || sidenav == 7}">
@@ -193,7 +230,299 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="col mb-2" ng-class="{'active': sidenav == 8}" ng-show="permission">
+                    <div id="toolbar">
+                        <button id="btn-add" class="btn btn-secondary">➕｜Ajouter un utilisateur</button>
+                    </div>
+                    <table class="table caption-top table-responsive table-striped table-hover"
+                        id="table"
+                        data-toolbar="#toolbar"
+                        data-search="true"
+                        data-show-refresh="true"
+                        data-show-columns="true"
+                        data-show-columns-toggle-all="true"
+                        data-show-export="true"
+                        data-detail-formatter="detailFormatter"
+                        data-minimum-count-columns="2"
+                        data-show-pagination-switch="true"
+                        data-pagination="true"
+                        data-id-field="id"
+
+                        data-group-by="true"
+                        data-group-by-field="name_group"
+
+                        data-page-list="[10, 25, 50, 100, all]"
+                        data-side-pagination="server"
+                        data-url="/userManagement"
+                        data-method="post"
+                        data-query-params="postQueryParams"
+                        data-content-type="application/x-www-form-urlencoded">
+                        <thead>
+                            <tr>
+                                <th data-field="id" data-width="100" data-sortable="true" data-halign="center">Id</th>
+                                <th data-field="name" data-width="100" data-sortable="true" data-halign="center">User</th>
+                                <th data-field="pwd" data-width="100" data-sortable="true" data-halign="center">Code</th>
+                                <th data-field="permission" data-width="100" data-sortable="true" data-halign="center" data-formatter="toCheckbox">Permission</th>
+    
+                                <th data-field="action" data-width="150" data-halign="center" data-align="center" data-formatter="actionFormatter" data-events="actionEvents">Actions</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
             </div>
         </main>
+
+        <script>
+            function initTable() {
+                var $table = $('#table');
+
+                $table.bootstrapTable('destroy').bootstrapTable({
+                    height: 550,
+                    locale: "fr-FR"
+                })
+            }
+
+            function postQueryParams(params) {
+                params.action = "getlist";
+                return params;
+            }
+
+            function actionFormatter(value, row, index) {
+                return [
+                    '<button class="btn btn-primary btn-xs btn-edit" title="Modifier"><span class="fas fa-edit"></span></button>',
+                    '<button class="btn btn-danger btn-xs btn-remove" title="Supprimer"><span class="fas fa-trash"></span></button>'
+                ].join('');
+            }
+
+            function toCheckbox(value, row, index) {
+                if (value == "1")
+                    return "✔️";
+                else if (value == "2") 
+                    return "⚠";
+                return "❌";
+            }
+
+            window.actionEvents = {
+                    'click .btn-remove': function (e, value, row, index) {
+                    // console.log("Remove : "+row["login"]);
+                    console.log(row);
+                    ShowDeleteUser(row);
+                    },'click .btn-edit': function (e, value, row, index) {
+                    console.log("Edit : "+row["id"]);
+                    ShowEditUser(row);
+                }
+            };
+
+            function ShowDeleteUser(row) {
+                Swal.fire({
+                    title: "Supprimer un utilisateur",
+                    html:	'Etes-vous sûr de vouloir supprimer l\'utilisateur "'+row["name"]+'" ?',
+                    width: '600px',
+                    allowEscapeKey:true,
+                    allowOutsideClick: false,
+                    showCancelButton: true,
+                    buttonsStyling:false,
+                    confirmButtonText: "Oui, je veux le supprimer",
+                    cancelButtonText: "Non",
+                    confirmButtonClass: "btn btn-warning",
+                    cancelButtonClass: "btn btn-secondary",
+                    showLoaderOnConfirm: false,
+                    focusCancel:true,
+                    preConfirm: function() {
+                        return new Promise(function(resolve) {
+                            var send=$.ajax({
+                                method: 'POST',
+                                url:'/userManagement',
+                                data: {
+                                    autofunc:true,
+                                    action:'deleteuser',
+                                    id: row["id"],
+                                }
+                            }).done(function(html){
+                                if(html != 'OK') {
+                                    Swal.showValidationMessage(html);
+                                    Swal.disableLoading();
+                                } else {
+                                    Swal.close();
+                                    $('#table').bootstrapTable('refresh');
+                                }
+                            }).fail(function(){
+                                Swal.fire('Erreur','Une erreur s\'est produite lors de la suppression du collaborateur !','error');
+                            });
+                        });
+                    }
+                });
+            }
+
+            $("#btn-add").click(function () {
+                ShowAddUser();
+            });
+
+            $('#table').on('dbl-click-row.bs.table', function (e, row, element, field) {
+                ShowEditUser(row);
+            });
+
+            function ShowAddUser() {
+                list_groupe = '';
+
+                Swal.fire({
+                    title: "Ajouter un utilisateur",
+                    html:	'<form class="needs-validation" novalidate>'+
+                            '    <div class="row">'+
+                            '       <div class="col-md-6 mb-3">'+
+                            '           <label for="edit_user">User :</label>'+
+                            '           <input type="text" class="form-control" id="edit_user" placeholder="" value="" required>'+
+                            '       </div>'+
+                            '       <div class="col-md-6 mb-3">'+
+                            '           <label for="edit_code">Code :</label>'+
+                            '             <div class="input-group">'+
+                            '              <input type="text" class="form-control" id="edit_code" placeholder="" value="'+pwdAleatoir()+'" required>'+
+                            '              <button class="btn btn-outline-secondary" type="button" onclick="updateCode()" id="button-addon2">Generate</button>'+
+                            '           </div>'+
+                            '       </div>'+
+                            '    <div class="row">'+
+                            '       <div class="col-md-6 mb-3">'+
+                            '           <div class="form-check form-switch">'+
+                            '               <input class="form-check-input" type="checkbox" id="edit_check_admin">'+
+                            '               <label class="form-check-label" for="edit_check_admin">Admin</label>'+
+                            '           </div>'+
+                            '       </div>'+
+                            '    </div>'+
+                            '    <hr class="mb-4">'+
+                            '</form>',
+                        width: '600px',
+                    allowEscapeKey:true,
+                    allowOutsideClick: false,
+                    showCancelButton: true,
+                    buttonsStyling:false,
+                    confirmButtonText: "Ajouter l'utilisateur",
+                    cancelButtonText: "Annuler",
+                    confirmButtonClass: "btn btn-success",
+                    cancelButtonClass: "btn btn-default",
+                    showLoaderOnConfirm: false,
+                    preConfirm: function() {
+                        return new Promise(function(resolve) {
+                            var send=$.ajax({
+                                method: 'POST',
+                                url:'/userManagement',
+                                data: {
+                                    autofunc: true,
+                                    action: 'addUser',
+                                    name: $("#edit_user").val(),
+                                    pwd: $("#edit_code").val(),
+                                    permission: $("#edit_check_admin").is(":checked")
+                                }
+                            }).done(function(html){
+                                if(html != 'OK') {
+                                    Swal.showValidationMessage(html);
+                                    swal.disableLoading();
+                                } else {
+                                    swal.close();
+                                    $('#table').bootstrapTable('refresh');
+                                }
+                            }).fail(function(){
+                                Swal.fire('Erreur','Une erreur s\'est produite lors de l\'enregistrement du collaborateur !','error');
+                            });
+                        });
+                    }
+                });
+                $('#edit_name_group').focus();
+            }
+
+            function ShowEditUser(row) {
+                list_groupe = '';
+
+                Swal.fire({
+                    title: "Modifier un utilisateur",
+                    html:	'<form class="needs-validation" novalidate>'+
+                            '    <hr class="mb-4">'+
+                            '    <div class="row">'+
+                            '       <div class="col-md-6 mb-3">'+
+                            '           <label for="edit_user">User :</label>'+
+                            '           <input type="text" class="form-control" id="edit_user" placeholder="" value="'+row["name"]+'" required>'+
+                            '       </div>'+
+                            '       <div class="col-md-6 mb-3">'+
+                            '           <label for="edit_code">Code :</label>'+
+                            '             <div class="input-group">'+
+                            '              <input type="text" class="form-control" id="edit_code" placeholder="" value="'+row["pwd"]+'" required>'+
+                            '              <button class="btn btn-outline-secondary" type="button" onclick="updateCode()" id="button-addon2">Generate</button>'+
+                            '           </div>'+
+                            '       </div>'+
+                            '    </div>'+
+                            '    <div class="row">'+
+                            '       <div class="col-md-6 mb-3">'+
+                            '           <div class="form-check form-switch">'+
+                            '               <input class="form-check-input" type="checkbox" '+((row["permission"] == 1)? "checked":"")+' id="edit_check_admin">'+
+                            '               <label class="form-check-label" for="edit_check_admin">Permission</label>'+
+                            '           </div>'+
+                            '       </div>'+
+                            '    </div>'+
+                            '    <hr class="mb-4">'+
+                            '</form>',
+                        width: '600px',
+                        allowEscapeKey:true,
+                        allowOutsideClick: false,
+                        showCancelButton: true,
+                        buttonsStyling: false,
+                        confirmButtonText: "Enregistrer",
+                        cancelButtonText: "Annuler",
+                        confirmButtonClass: "btn btn-success",
+                        cancelButtonClass: "btn btn-danger",
+                        showLoaderOnConfirm: false,
+                        preConfirm: function() {
+                            return new Promise(function(resolve) {
+                                var send=$.ajax({
+                                    method: 'POST',
+                                    url:'/userManagement',
+                                    data: {
+                                        autofunc: true,
+                                        action: 'edituser',
+                                        id: row["id"],
+                                        name: $("#edit_user").val(),
+                                        pwd: $("#edit_code").val(),
+                                        permission: $("#edit_check_admin").is(":checked"),
+                                    }
+                                }).done(function(html){
+                                    if(html != 'OK') {
+                                        Swal.showValidationMessage(html);
+                                        swal.disableLoading();
+                                    } else {
+                                        swal.close();
+                                        $('#table').bootstrapTable('refresh');
+                                    }
+                                }).fail(function(){
+                                    Swal.fire('Erreur','Une erreur s\'est produite lors de l\'enregistrement du collaborateur !','error');
+                                });
+                            });
+                        }
+                });
+                $('#edit_name_group').focus();
+            }
+
+            function pwdAleatoir() {
+                String.prototype.shuffle = function() {
+                    var parts = this.split('');
+                    for (var i = 0, len = parts.length; i < len; i++) {
+                        var j = Math.floor( Math.random() * ( i + 1 ) );
+                        var temp = parts[i];
+                        parts[i] = parts[j];
+                        parts[j] = temp;
+                    }
+                    return parts.join('');
+                };
+
+                return '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.shuffle().substr(1, 5);
+            }
+
+            function updateCode() {
+                $("#edit_code").val(pwdAleatoir());
+            }
+
+            $(() => {
+                initTable();
+            })
+        </script>
+
     </body>
 </html>
