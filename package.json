@@ -20,6 +20,7 @@
     "node-ical": "^0.13.0",
     "reddit-wrapper-v2": "^1.1.6",
     "sequelize": "^6.3.5",
+    "simple-get": "^4.0.1",
     "tedious": "^14.0.0"
   }
 }

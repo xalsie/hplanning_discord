@@ -247,8 +247,8 @@ function section1() {
 
 	for (element in myObj.list[1]) {
 		dataMsg += 	"> "+myObj.list[1][element].Icone+
-					"｜"+element.padEnd(2)+
-					"｜"+myObj.list[1][element].Name.padEnd(20)+
+					"｜"+String(element).padEnd(2)+
+					"｜"+String(myObj.list[1][element].Name).padEnd(20)+
 					":   "+convertNumber(myObj.list[1][element].Cash)+"\n";
 	}
 
@@ -269,8 +269,8 @@ function section2() {
 
 	for (element in myObj.list[2]) {
 		dataMsg += 	"> "+myObj.list[2][element].Icone+
-					"｜"+element.padEnd(2)+
-					"｜"+myObj.list[2][element].Name.padEnd(20)+
+					"｜"+String(element).padEnd(2)+
+					"｜"+String(myObj.list[2][element].Name).padEnd(20)+
 					":   "+convertNumber(myObj.list[2][element].Cash)+"\n";
 	}
 
@@ -295,8 +295,8 @@ function section3() {
 
 	for (element in myObj.list[3]) {
 		dataMsg += 	"> "+myObj.list[3][element].Icone+
-					"｜"+element.padEnd(2)+
-					"｜"+myObj.list[3][element].Name.padEnd(20)+
+					"｜"+String(element).padEnd(2)+
+					"｜"+String(myObj.list[3][element].Name).padEnd(20)+
 					":   "+convertNumber(myObj.list[3][element].Cash)+"\n";
 	}
 
@@ -315,7 +315,7 @@ function section4() {
 					"> ```JSON\n";
 
 	for (element in myObj.list[4]) {
-		dataMsg += 	"> "+myObj.list[4][element].countItems.padEnd(5)+
+		dataMsg += 	"> "+String(myObj.list[4][element].countItems).padEnd(5)+
 					"｜"+myObj.list[4][element].nameItems+"\n";
 	}
 
@@ -334,7 +334,7 @@ function section5() {
 					"> ```JSON\n";
 
 	for (element in myObj.list[5]) {
-		dataMsg += 	"> "+myObj.list[5][element].countItems.padEnd(5)+
+		dataMsg += 	"> "+String(myObj.list[5][element].countItems).padEnd(5)+
 					"｜"+myObj.list[5][element].nameItems+"\n";
 	}
 
@@ -353,7 +353,7 @@ function section6() {
 					"> ```JSON\n";
 
 	for (element in myObj.list[6]) {
-		dataMsg += 	"> "+myObj.list[6][element].countItems.padEnd(5)+
+		dataMsg += 	"> "+String(myObj.list[6][element].countItems).padEnd(5)+
 					"｜"+myObj.list[6][element].nameItems+"\n";
 	}
 
