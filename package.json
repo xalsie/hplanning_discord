@@ -17,6 +17,7 @@
     "express-session": "^1.17.2",
     "follow-redirects": "^1.14.7",
     "moment": "^2.29.1",
+    "moment-timezone": "^0.5.34",
     "mysql2": "^2.2.5",
     "node-ical": "^0.13.0",
     "reddit-wrapper-v2": "^1.1.6",
