@@ -1,7 +1,7 @@
 // #############################
 // ### start import require ###
 // ### import write/read file
-	const fs = require('fs');
+const fs = require('fs');
 // ### import discord.js
 	const { Client, Permissions, MessageEmbed} = require('discord.js');
 	const permissions = new Permissions(8);
@@ -12,6 +12,7 @@
 	const axios = require('axios');
 // ### import moment.js
 	const moment = require('moment');
+	const momentTZ = require('moment-timezone');
 	moment.locale('fr');
 // ### import sortby - sort table order
 	require("./sortBy.js");
@@ -24,14 +25,14 @@
 	var dateOneDay = new Date();
 		dateOneDay =  dateToString(dateOneDay.setDate(dateOneDay.getDate() + 1));
 	var lastmodified = new Date();
-	var startWeek = moment().startOf('week').toDate();
-	var endWeek = moment().startOf('week').add(1, 'days').toDate();
+	var startWeek = moment().tz("Europe/Paris").startOf('week').add(1, 'days').toDate();
+	var endWeek = moment().tz("Europe/Paris").startOf('week').add(2, 'days').toDate();
 // ### heure work
 	var startHourDay = false;
 	var endHourDay = false;
 // ### date prochaine semaine
-	var startNextWeek = moment().week(Number.parseInt(moment().format('W'))+1).startOf('week').toDate();
-	var endNextWeek = moment().week(Number.parseInt(moment().format('W'))+1).startOf('week').add(1, 'days').toDate();
+	var startNextWeek = moment().tz("Europe/Paris").week(Number.parseInt(moment().tz("Europe/Paris").format('W'))+1).startOf('week').add(1, 'days').toDate();
+	var endNextWeek = moment().tz("Europe/Paris").week(Number.parseInt(moment().tz("Europe/Paris").format('W'))+1).startOf('week').add(2, 'days').toDate();
 // ______________________
 
 const {bot_1} = require('./config.json');
@@ -59,11 +60,11 @@ var data = fs.readFileSync('./uuidMessages.json'), myObj;
 	}
 
 client.on('ready', () => {
-	console.log("BOT startup : "+moment().format('LTS'));
+	console.log("BOT startup : "+moment().tz("Europe/Paris").format('LLLL'));
 	console.log("	Version publier : "+releasePub);
 
 	var x = false;
-	if ((moment().format('LTS') >= moment("20210920T113000Z").format('LTS')) && (moment().format('LTS') <= moment("20210920T130000Z").format('LTS'))) {
+	if ((moment().tz("Europe/Paris").format('LTS') >= moment("20210920T113000Z").format('LTS')) && (moment().tz("Europe/Paris").format('LTS') <= moment("20210920T130000Z").format('LTS'))) {
 		x = true;
 	}
 
@@ -247,7 +248,7 @@ function dateToString(date) {
 
 function refreshRate() {
 	var rtn = 0;
-	if (moment().toDate() <= moment().startOf('week').add(2, 'days').toDate() && (moment().toDate() > startHourDay || moment().toDate() < endHourDay)) {
+	if (moment().tz("Europe/Paris").toDate() <= moment().tz("Europe/Paris").startOf('week').add(2, 'days').toDate() && (moment().tz("Europe/Paris").toDate() > startHourDay || moment().tz("Europe/Paris").toDate() < endHourDay)) {
 		rtn = 2; // 15 minutes
 	} else {
 		rtn = 120; // 120 minutes = 2H
@@ -297,7 +298,7 @@ function parseIcsDirectly(DataIcs, message, param, idChannel) {
 		Object.values(data).forEach(function(elems, idxs) {
 			Object.keys(elems).forEach(function(elem, idx) {
 				if (elem == "start") {
-					if (moment().toDate() < moment(endWeek).add(1, 'days')) {
+					if (moment().tz("Europe/Paris").toDate() < moment(endWeek).tz("Europe/Paris").add(1, 'days')) {
 						if (dateToString(elems["start"]) == dateToString(startWeek))
 							arrayLundi.push({start: elems["start"], end: elems["end"], description: elems["description"]['val']});
 						if (dateToString(elems["start"]) == dateToString(endWeek))
@@ -333,19 +334,19 @@ async function displayMsg(message, arrayGenerate, param) {
 	var rtnVersion = displayVersion();
 
 	// console.log(arrayGenerate);
-	var planning = "**```FIX\n📅｜Cours du "+moment((moment().toDate() < moment(endWeek).add(1, 'days'))? startWeek:startNextWeek).format("dddd DD MMMM")+" :```**\n";
+	var planning = "**```FIX\n📅｜Cours du "+moment((moment().tz("Europe/Paris").toDate() < moment(endWeek).add(1, 'days'))? startWeek:startNextWeek).format("dddd DD MMMM")+" :```**\n";
 
 		arrayGenerate[0].forEach((value, key) => {
 			planning += msgFormating(value);
 		})
 
-	planning += "\n**```FIX\n📅｜Cours du "+moment((moment().toDate() < moment(endWeek).add(1, 'days'))? endWeek:endNextWeek).format("dddd DD MMMM")+" :```**\n";
+	planning += "\n**```FIX\n📅｜Cours du "+moment((moment().tz("Europe/Paris").toDate() < moment(endWeek).add(1, 'days'))? endWeek:endNextWeek).format("dddd DD MMMM")+" :```**\n";
 
 		arrayGenerate[1].forEach((value, key) => {
 			planning += msgFormating(value);
 		})
 
-	planning += "```DIFF\n+ 🔄｜Mise à jour : "+moment().format('llll')+"```";
+	planning += "```DIFF\n+ 🔄｜Mise à jour : "+moment().tz("Europe/Paris").format('llll')+"```";
 	planning += "\n```CS\nV"+rtnVersion.version+" ("+rtnVersion.dateversion+")```";
 
 	var uuidParam = "";
@@ -365,7 +366,7 @@ async function displayMsg(message, arrayGenerate, param) {
 	}
 
 	client.channels.fetch(uuidChannel).then((channel) => {
-		console.log("Mise a jour du planning dans "+channel.name+" : "+moment().format('llll'));
+		console.log("Mise a jour du planning dans "+channel.name+" : "+moment().tz("Europe/Paris").format('llll'));
 
 		channel.messages.fetch({around: uuidParam, limit: 1})
 		.then(msg => {
@@ -383,9 +384,9 @@ async function displayMsg(message, arrayGenerate, param) {
 }
 
 function msgFormating(value) {
-	var x = ((moment() >= moment(value.start)) && (moment() <= moment(value.end)))? "\> ":"";
+	var x = ((moment().tz("Europe/Paris") >= moment(value.start).tz("Europe/Paris")) && (moment().tz("Europe/Paris") <= moment(value.end).tz("Europe/Paris")))? "\> ":"";
 
-	now = moment();
+	now = moment().tz("Europe/Paris");
 	var percentage_rounded = ((Math.round(((now - value.start) / (value.end - value.start) * 100)*100) / 100)/10)-1;
 	var strBarTime = "          ";
 
@@ -393,15 +394,15 @@ function msgFormating(value) {
 		strBarTime = strBarTime.replace(" ", "=");
 	}
 
-	var timer = ((moment() >= moment(value.start)) && (moment() <= moment(value.end)))? "> ⏳｜Timer : ["+strBarTime.replace(" ", ">")+"] "+Math.round((percentage_rounded+1)*10)+"%\n":"";
+	var timer = ((moment().tz("Europe/Paris") >= moment(value.start).tz("Europe/Paris")) && (moment().tz("Europe/Paris") <= moment(value.end).tz("Europe/Paris")))? "> ⏳｜Timer : ["+strBarTime.replace(" ", ">")+"] "+Math.round((percentage_rounded+1)*10)+"%\n":"";
 
 	var description = (value.description.trim().toLowerCase().includes("report") || value.description.trim().toLowerCase().includes("annulé"))? "DIFF\n- "+value.description.trim().replaceAll("\n", "\n- "):value.description;
 
-	var str = "> 🕐｜"+x+"Debut : "+moment(value.start).format('LT')+"\n"+
+	var str = "> 🕐｜"+x+"Debut : "+moment(value.start).tz("Europe/Paris").format('LT')+"\n"+
 				timer+
 				"> ```"+description.trim().replaceAll(" : ", ": ").replaceAll("\n", "\n> ")+"```"+
-				"\n> 🕐｜Fin : "+moment(value.end).format('LT')+
-				"\n> ———————————————————\n\n";
+				"\n> 🕐｜Fin : "+moment(value.end).tz("Europe/Paris").format('LT')+
+				"\n> —————————————————\n\n";
 
 	return str;
 }
