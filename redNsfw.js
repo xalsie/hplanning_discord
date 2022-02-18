@@ -26,7 +26,7 @@
 // ______________________
 
 const {bot_2, reddit} = require('./config.json');
-	const {prefix, releasePub, token} = bot_2;
+	const {prefix, prefix2, releasePub, token} = bot_2;
 
 client.on('ready', () => {
 	console.log("BOT startup : "+moment().format('LTS'));
@@ -36,19 +36,26 @@ client.on('ready', () => {
 });
 
 client.on('message', async message => {
-
 	let args = message.content.split(" ");
 
 	if (args[0].toLowerCase() == `${prefix}nsfw`) {
-		deleteMsg(message);
+		// deleteMsg(message);
 
-		console.log("@"+ message.author.username +" a fait la commande /nsfw");
+		console.log("@"+ message.author.username +" a fait la commande "+message.content);
 
-		getRedditPicture();
+		getRedditPicture('nsfw', message, message.author);
+	}
+
+	if (args[0].toLowerCase() == `${prefix2}`) {
+		// deleteMsg(message);
+
+		console.log("@"+ message.author.username +" a fait la commande "+message.content);
+
+		getRedditPicture(args[1].toLowerCase(), message, message.author);
 	}
 
 	if (args[0].toLowerCase() == `${prefix}rank`) {
-		deleteMsg(message);
+		// deleteMsg(message);
 		getStat();
 	}
 });
@@ -68,7 +75,7 @@ client.on('messageReactionAdd', async (_reaction, user) => {
 
 			console.log("@"+ user.username +" a réagie a NEW /nsfw");
 
-			getRedditPicture();
+			getRedditPicture('nsfw', false, user);
 
 			addReactToJson(user, 'new');
 
@@ -222,8 +229,8 @@ function dateToString(date) {
 	return year +"-"+ month +"-"+ day;
 }
 
-function getRedditPicture() {
-	var redditConn = new RedditAPI({
+function getRedditPicture(subreddit = false, message = false, user = false) {
+	var redditConn	= new RedditAPI({
 	    // Options for Reddit Wrapper
 		username: reddit.username,
 		password: reddit.password,
@@ -245,7 +252,7 @@ function getRedditPicture() {
 		})
 		.catch(function(err) {});
 
-	redditConn.api.get('/r/nsfw/random', {
+	redditConn.api.get('/r/'+subreddit+'/random', {
 			limit: 1,
 		})
 		.then(function(response) {
@@ -254,11 +261,11 @@ function getRedditPicture() {
 				let link = elem.data.children[0].data;
 
 				if (link.domain == 'redgifs.com') {
-					getRedditPicture();
+					getRedditPicture(subreddit, message, user);
 					return;
 				}
 
-				if (link.url) postMessage(link.url);
+				if (link.url) postMessage(link, link.url, subreddit, message, user);
 			
 			});
 		})
@@ -284,8 +291,22 @@ function getChannelPause() {
 	return uuid;
 }
 
-function postMessage(url) {
-	client.channels.cache.get(getChannelPause()).send("⬇️｜|| "+ url +" ||｜⬇️")
+function postMessage(link, url, subreddit, message, user) {
+	const exampleEmbed = {
+		"color": "#b90c0c",
+		"title": link.subreddit_name_prefixed,
+		"url": "https://www.reddit.com"+link.permalink,
+		"description": "Publié par [u/"+link.author+"](https://www.reddit.com/u/"+link.author+") `"+link.author_flair_text+"`\n\n ⬇️｜ "+url+" ｜⬇️",
+		"image": {
+			"url": url
+		},
+		"timestamp": new Date(),
+		"footer": {
+			"text": "@"+user.username
+		}
+	};
+
+	client.channels.cache.get(getChannelPause()).send({ embed: exampleEmbed })
 		.then(function (message) {
 			message.react('🆕')
 			message.react('👍🏻')
