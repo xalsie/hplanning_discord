@@ -49,6 +49,11 @@ client.on('message', async message => {
 
 	let args = message.content.split(" ");
 
+	if (args[0].toLowerCase() == `${prefix}first`) {
+		deleteMsg(message);
+		message.channel.send('Bot Compta init!');
+	}
+
 	if (args[0].toLowerCase() == `${prefix}compta`) {
 		deleteMsg(message)
 
@@ -192,7 +197,7 @@ function getMsgData() {
 	toDisplayMsg();
 }
 
-function toDisplayMsg(myObj) {
+function toDisplayMsg() {
 
 	var section_1 = section1();
 	var section_2 = section2();
