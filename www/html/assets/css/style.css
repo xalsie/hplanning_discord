@@ -5,20 +5,64 @@
 /*-------------------------*\
     $SIDE BAR
 \*-------------------------*/
-.sidebar {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 100;
-    padding: 48px 0 0;
-    background-color: #F7F7F7 !important;
-  }
-  
   @media (max-width: 767.98px) {
     .sidebar {
-      top: 5rem;
+      height: 100%;
+      width: 0;
+      position: fixed;
+      z-index: 1;
+      top: 0;
+      left: -280px;
+      overflow-x: hidden;
+      transition: 0.5s;
     }
+
+    .b-example-divider {
+      display: none;
+    }
+
+    .btnSidebarOpen {
+      display: block !important;
+    }
+
+    .sidebar .btnSidebarClose {
+      display: block !important;
+    }
+  }
+
+  .btnSidebarOpen {
+    top: 15px;
+    left: 15px;
+    font-size: 20px;
+    cursor: pointer;
+    position: relative;
+    color: white;
+    background-color: #a9a9a9;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+
+    display: none;
+  }
+
+  .btnSidebarOpen:hover {
+    background-color: #444;
+  }
+
+  .sidebar .btnSidebarClose {
+    position: absolute;
+    top: 5px;
+    right: 15px;
+    font-size: 36px;
+    margin-left: 50px;
+    color: #818181;
+    text-decoration: none;
+
+    display: none;
+  }
+
+  .sidebar a:hover {
+    color: #f1f1f1;
   }
   
   .sidebar-sticky {

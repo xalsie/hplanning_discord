@@ -95,11 +95,15 @@
 
     </head>
     <body>
+        <button class="btnSidebarOpen" onclick="btnSidebarOpen()">☰</button>
+
         <main ng-controller="appCommon">
-            <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px;">
+            <div id="sidebar" class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark sidebar" style="width: 280px;">
                 <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                     <span class="fs-6 p-2">📚｜ComptaBot#7814 <span class="badge rounded-pill bg-primary small">BOT</span></span>
                 </a>
+                <a href="javascript:void(0)" class="btnSidebarClose" onclick="btnSidebarClose()">×</a>
+                
                 <hr>
                 <ul class="nav nav-pills flex-column mb-auto" ng-click="onClick($event);">
                     <li class="nav-item">
@@ -157,7 +161,7 @@
             </div>
             <div class="b-example-divider"></div>
 
-            <div class="flex-column p-5 container-fluid" ng-cloak>
+            <div class="flex-column p-5 container-fluid" ng-cloak style="overflow: overlay;">
                 <h2>{{sectionTitle}}</h2>
                 <hr>
                 <div class="mb-2 g-4 align-items-center" ng-class="{'active': sidenav == 1 || sidenav == 2 || sidenav == 3 || sidenav == 7}">
@@ -527,6 +531,14 @@
             $(() => {
                 initTable();
             })
+
+            function btnSidebarOpen() {
+                document.getElementById("sidebar").style.left = "0";
+            }
+
+            function btnSidebarClose() {
+                document.getElementById("sidebar").style.left = "-280px";
+            }
         </script>
 
     </body>

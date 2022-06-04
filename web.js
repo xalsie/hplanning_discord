@@ -5,7 +5,7 @@ const { refreshByWeb } = require('./comptaHome.js');
 const fs = require('fs').promises;
 
 const app = express();
-const port = 20347;
+const port = 20038;
 
 app.use(session({
 	secret: 'secret',
