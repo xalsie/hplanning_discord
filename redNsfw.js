@@ -4,8 +4,11 @@
     const fs = require('fs');
 // ### import discord.js
 	const { Client, Permissions, MessageEmbed} = require('discord.js');
-	const permissions = new Permissions(8);
-	const client = new Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
+	const client = new Client({
+		partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
+		intents: ['DIRECT_MESSAGES', 'DIRECT_MESSAGE_REACTIONS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'GUILDS']
+	});
+
 // ### import axios
 	const axios = require('axios');
 // ### import moment.js
@@ -35,7 +38,7 @@ client.on('ready', () => {
 	console.log(`\nBot 2 -> Logged in as ${client.user.tag}!`);
 });
 
-client.on('message', async message => {
+client.on('messageCreate', async message => {
 	let args = message.content.split(" ");
 
 	if (args[0].toLowerCase() == `${prefix}nsfw`) {
@@ -44,6 +47,9 @@ client.on('message', async message => {
 		console.log("@"+ message.author.username +" a fait la commande "+message.content);
 
 		getRedditPicture('nsfw', message, message.author);
+
+		addReactToJson(message.author, 'new', getChannelPause(message));
+		addCategoriesToJson(message.author, 'nsfw', getChannelPause(message))
 	}
 
 	if (args[0].toLowerCase() == `${prefix2}`) {
@@ -51,23 +57,31 @@ client.on('message', async message => {
 
 		console.log("@"+ message.author.username +" a fait la commande "+message.content);
 
+		addCategoriesToJson(message.author, args[1].toLowerCase(), getChannelPause(message))
+
 		getRedditPicture(args[1].toLowerCase(), message, message.author);
 	}
 
 	if (args[0].toLowerCase() == `${prefix}rank`) {
 		// deleteMsg(message);
-		getStat();
+		getStat(message);
+	}
+
+	if (args[0].toLowerCase() == `${prefix}top`) {
+		// deleteMsg(message);
+		getCat(message);
 	}
 });
 
 client.on('messageReactionAdd', async (_reaction, user) => {
-	if (user.id === "888354278043947038" || user.id === "884429785802092574" || user.id === "923238213768863835") {
+
+	if (['888354278043947038', '884429785802092574', '923238213768863835', '945622322247770113'].includes(user.id)) {
 		return 1;
 	}
 
 	switch (_reaction._emoji.name) {
 		case '🆕':
-			uuidChannel = getChannelPause();
+			uuidChannel = getChannelPause(_reaction.message);
 
 			if (uuidChannel != _reaction.message.channel.id) return;
 
@@ -75,31 +89,32 @@ client.on('messageReactionAdd', async (_reaction, user) => {
 
 			console.log("@"+ user.username +" a réagie a NEW /nsfw");
 
-			getRedditPicture('nsfw', false, user);
+			getRedditPicture('nsfw', _reaction.message, user);
 
-			addReactToJson(user, 'new');
+			addReactToJson(user, 'new', uuidChannel);
+			addCategoriesToJson(user, 'nsfw', uuidChannel)
 
 			break;
 		case '👍🏻':
-			uuidChannel = getChannelPause();
+			uuidChannel = getChannelPause(_reaction.message);
 
 			if (uuidChannel != _reaction.message.channel.id) return;
 
-			addReactToJson(user, 'like');
+			addReactToJson(user, 'like', uuidChannel);
 			break;
 		case '👎🏻':
-			uuidChannel = getChannelPause();
+			uuidChannel = getChannelPause(_reaction.message);
 
 			if (uuidChannel != _reaction.message.channel.id) return;
 
-			addReactToJson(user, 'dislike');
+			addReactToJson(user, 'dislike', uuidChannel);
 			break;
 		case '❤':
-			uuidChannel = getChannelPause();
+			uuidChannel = getChannelPause(_reaction.message);
 
 			if (uuidChannel != _reaction.message.channel.id) return;
 
-			addReactToJson(user, 'love');
+			addReactToJson(user, 'love', uuidChannel);
 			break;
 
 		default:
@@ -150,74 +165,131 @@ function displayVersion() {
 	return {version, dateversion};
 }
 
-function addReactToJson(user, react) {
-	var dataNsfw = fs.readFileSync('./nsfwStat.json'), myObjNsfw;
+function addReactToJson(user, react, uuidChannel) {
 	var { userUuid, userStat, userName} = "";
+	var myObjNsfw = undefined;
+	var dataNsfw = fs.readFile('./nsfwStat.db', 'utf8', function (err, data) {
+		if (err) throw err;
 
-	if (dataNsfw == undefined) {
-		myObjNsfw = {};
-		myObjNsfw[user.id] = {};
-		myObjNsfw[user.id]["name"] = user.username;
-		myObjNsfw[user.id]["new"] = 0;
-		myObjNsfw[user.id]["like"] = 0;
-		myObjNsfw[user.id]["dislike"] = 0;
-		myObjNsfw[user.id]["love"] = 0;
-		myObjNsfw[user.id]["autre"] = 0;
-	} else {
 		try {
-			myObjNsfw = JSON.parse(dataNsfw);
-		
-			if (myObjNsfw[user.id] == undefined) {
+			console.log("Try parse json ...");
+
+			myObjNsfw = JSON.parse(data);
+
+			if (myObjNsfw[uuidChannel]["topUsers"][user.id] == undefined) {
+				console.log("create array ...");
 				console.log("######");
-				myObjNsfw[user.id] = {};
-				myObjNsfw[user.id]["name"] = user.username;
-				myObjNsfw[user.id]["new"] = 0;
-				myObjNsfw[user.id]["like"] = 0;
-				myObjNsfw[user.id]["dislike"] = 0;
-				myObjNsfw[user.id]["love"] = 0;
-				myObjNsfw[user.id]["autre"] = 0;
+				myObjNsfw[uuidChannel]["topUsers"][user.id] = {};
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["name"] = user.username;
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["new"] = 0;
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["like"] = 0;
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["dislike"] = 0;
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["love"] = 0;
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["autre"] = 0;
 			}
 
-			btNew = myObjNsfw[user.id]["new"];
-			btLike = myObjNsfw[user.id]["like"];
-			btDislike = myObjNsfw[user.id]["dislike"];
-			btLove = myObjNsfw[user.id]["love"];
-			btAutre = myObjNsfw[user.id]["autre"];
+			btNew = myObjNsfw[uuidChannel]["topUsers"][user.id]["new"];
+			btLike = myObjNsfw[uuidChannel]["topUsers"][user.id]["like"];
+			btDislike = myObjNsfw[uuidChannel]["topUsers"][user.id]["dislike"];
+			btLove = myObjNsfw[uuidChannel]["topUsers"][user.id]["love"];
+			btAutre = myObjNsfw[uuidChannel]["topUsers"][user.id]["autre"];
 
-			console.log("create array ...");
-			console.log(myObjNsfw);
 		} catch (err) {
 			console.log('There has been an error parsing your JSON.');
+
+			console.log("VIDE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+			myObjNsfw = {};
+			myObjNsfw[uuidChannel] = {};
+			myObjNsfw[uuidChannel]["topUsers"] = {};
+			myObjNsfw[uuidChannel]["topUsers"][user.id] = {};
+			myObjNsfw[uuidChannel]["topUsers"][user.id]["name"] = user.username;
+			myObjNsfw[uuidChannel]["topUsers"][user.id]["new"] = 0;
+			myObjNsfw[uuidChannel]["topUsers"][user.id]["like"] = 0;
+			myObjNsfw[uuidChannel]["topUsers"][user.id]["dislike"] = 0;
+			myObjNsfw[uuidChannel]["topUsers"][user.id]["love"] = 0;
+			myObjNsfw[uuidChannel]["topUsers"][user.id]["autre"] = 0;
+
+			btNew = myObjNsfw[uuidChannel]["topUsers"][user.id]["new"];
+			btLike = myObjNsfw[uuidChannel]["topUsers"][user.id]["like"];
+			btDislike = myObjNsfw[uuidChannel]["topUsers"][user.id]["dislike"];
+			btLove = myObjNsfw[uuidChannel]["topUsers"][user.id]["love"];
+			btAutre = myObjNsfw[uuidChannel]["topUsers"][user.id]["autre"];
+			// console.log(err);
+		}
+
+		switch (react) {
+			case 'new':
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["new"] = btNew + 1;
+				break;
+			case 'like':
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["like"] = btLike + 1;
+				break;
+			case 'dislike':
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["dislike"] = btDislike + 1;
+				break;
+			case 'love':
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["love"] = btLove + 1;
+				break;
+			default:
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["autre"] = btAutre + 1;
+				break;
+		}
+	
+		fs.writeFile('./nsfwStat.db', JSON.stringify(myObjNsfw), function (err) {
+			if (err) {
+				console.log('There has been an error saving your configuration data.');
+				console.log(err.message);
+				return;
+			}
+			console.log('Stat saved successfully.');
+		});
+	});
+	return;
+}
+
+function addCategoriesToJson(user, categories, uuidChannel) {
+	var myObjNsfw = undefined;
+	var dataNsfw = fs.readFile('./nsfwStat.db', 'utf8', function (err, data) {
+		if (err) throw err;
+
+		try {
+			console.log("Try parse json ...");
+
+			myObjNsfw = JSON.parse(data);
+
+			if (myObjNsfw[uuidChannel]["categories"][categories] == undefined) {
+				console.log("create array ...");
+				console.log("######");
+				myObjNsfw[uuidChannel]["categories"][categories] = 0;
+			}
+
+			cate = myObjNsfw[uuidChannel]["categories"][categories];
+
+		} catch (err) {
+			console.log('There has been an error parsing your JSON.');
+
+			console.log("VIDE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+			// myObjNsfw = {};
+			// myObjNsfw[uuidChannel] = {};
+			// myObjNsfw[uuidChannel]["categories"] = {};
+			myObjNsfw[uuidChannel]["categories"][categories] = 0;
+
+			cate = myObjNsfw[uuidChannel]["categories"][categories];
 			console.log(err);
 		}
-	}
 
-	switch (react) {
-		case 'new':
-			myObjNsfw[user.id]["new"] = btNew + 1;
-			break;
-		case 'like':
-			myObjNsfw[user.id]["like"] = btLike + 1;
-			break;
-		case 'dislike':
-			myObjNsfw[user.id]["dislike"] = btDislike + 1;
-			break;
-		case 'love':
-			myObjNsfw[user.id]["love"] = btLove + 1;
-			break;
-		default:
-			myObjNsfw[user.id]["autre"] = btAutre + 1;
-			break;
-	}
-
-	fs.writeFile('./nsfwStat.json', JSON.stringify(myObjNsfw), function (err) {
-		if (err) {
-			console.log('There has been an error saving your configuration data.');
-			console.log(err.message);
-			return;
-		}
-		console.log('Stat saved successfully.');
+		myObjNsfw[uuidChannel]["categories"][categories] = cate + 1;
+	
+		fs.writeFile('./nsfwStat.db', JSON.stringify(myObjNsfw), function (err) {
+			if (err) {
+				console.log('There has been an error saving your configuration data.');
+				console.log(err.message);
+				return;
+			}
+			console.log('Stat saved successfully.');
+		});
 	});
+	return;
 }
 
 function dateToString(date) {
@@ -253,30 +325,49 @@ function getRedditPicture(subreddit = false, message = false, user = false) {
 		.catch(function(err) {});
 
 	redditConn.api.get('/r/'+subreddit+'/random', {
-			limit: 1,
-		})
-		.then(function(response) {
+		limit: 1,
+	})
+	.then(function(response) {
+		let link = response[1][0].data.children[0].data;
 
-			response[1].forEach(function(elem, idx) {
-				let link = elem.data.children[0].data;
+		// console.log(response[1][0].data.children[0].data);
+		// return;
 
-				if (link.domain == 'redgifs.com') {
-					getRedditPicture(subreddit, message, user);
-					return;
-				}
+		if (link.domain == 'redgifs.com') {
+			// getRedditPicture(subreddit, message, user);
 
-				if (link.url) postMessage(link, link.url, subreddit, message, user);
-			
-			});
-		})
-		.catch(function(err) {
-			console.log("Error getting picture: ", err);
-		})
+			let video = link.preview.reddit_video_preview.fallback_url
+			// is_gif: true
+
+			// let thumbnail = link.thumbnail
+			// console.log("POST GIF -> "+video);
+
+			postMessage(link, video, true, message, user);
+			return;
+		} 
+		// else if (link.domain == 'i.imgur.com') {
+		// 	postMessage(link, link.url, true, message, user);
+		// }
+		else {
+			// let fileSplit = link.url.split('?')[0];
+			// let fileIndex = fileSplit.substr(fileSplit.lastIndexOf(".")+1);
+				// console.log("fileIndex -> "+ fileIndex);
+
+			postMessage(link, link.url, false, message, user);
+		}
+
+		// if (link.url) postMessage(link, link.url, false, message, user);
+	})
+	.catch(function(err) {
+		console.log("Error getting picture: ", err);
+	})
 }
 
-function getChannelPause() {
-	let uuidDev = '912793714638848110';
-	let uuidProd = '912375379963035698';
+function getChannelPause(message) {
+	// let uuidDev = '912793714638848110';
+	// let uuidProd = '912375379963035698';
+	let uuidDev = message.channel.id;
+	let uuidProd = message.channel.id;
 	let uuid = 0;
 
 	switch(releasePub) {
@@ -291,22 +382,28 @@ function getChannelPause() {
 	return uuid;
 }
 
-function postMessage(link, url, subreddit, message, user) {
-	const exampleEmbed = {
-		"color": "#b90c0c",
-		"title": link.subreddit_name_prefixed,
-		"url": "https://www.reddit.com"+link.permalink,
-		"description": "Publié par [u/"+link.author+"](https://www.reddit.com/u/"+link.author+") `"+link.author_flair_text+"`\n\n ⬇️｜ "+url+" ｜⬇️",
-		"image": {
-			"url": url
-		},
-		"timestamp": new Date(),
-		"footer": {
-			"text": "@"+user.username
-		}
-	};
+function postMessage(link, url, is_gif, message, user) {
+	var exampleEmbed = new MessageEmbed()
+		.setColor('#ff00d7')
+		.setTitle(link.subreddit_name_prefixed)
+		.setURL("https://www.reddit.com"+link.permalink)
+		.setDescription("Publié par [u/"+link.author+"](https://www.reddit.com/u/"+link.author+") `"+link.author_flair_text+"`\n\n ⬇️｜ "+url+" ｜⬇️")
 
-	client.channels.cache.get(getChannelPause()).send({ embed: exampleEmbed })
+		// .setImage(url)
+		.setTimestamp(new Date())
+		.setFooter({ text: "@"+user.username })
+		// .setColor('#0099ff')
+
+	if (is_gif) {
+		mess = { embeds: [exampleEmbed], files: [url] }
+	} else {
+		exampleEmbed
+			.setImage(url)
+		
+		mess = { embeds: [exampleEmbed] }
+	}
+
+	client.channels.cache.get(getChannelPause(message)).send(mess)
 		.then(function (message) {
 			message.react('🆕')
 			message.react('👍🏻')
@@ -315,13 +412,15 @@ function postMessage(link, url, subreddit, message, user) {
 		});
 }
 
-function getStat() {
-	var dataNsfw = fs.readFileSync('./nsfwStat.json'), myObjNsfw;
+function getStat(message = false) {
+	var dataNsfw = fs.readFileSync('./nsfwStat.db'), myObjNsfw;
 	var { userUuid, userStat, userName} = "";
 
 	myObjNsfw = JSON.parse(dataNsfw);
 
 	// ❔
+
+	myObjNsfw = myObjNsfw[getChannelPause(message)]["topUsers"];
 
 	var array = new Array();
 	var data = "";
@@ -337,25 +436,66 @@ function getStat() {
 
 		array.push({count: countTotal, data: `${name.padEnd(20)}` + `${btNew.padEnd(10)}` + `${btLike.padEnd(11)}` + `${btDislike.padEnd(11)}` + `${btLove.padEnd(5)}\n`});
 	})
-	
+
 	array.sort((a,b) => a.count-b.count).reverse();
 
-	data = `\`\`\`\n${'🚀｜N°'.padEnd(6)}` + `${'@｜Name'.padEnd(16)}` + `${'🆕｜NEW'.padEnd(9)}` + `${'👍🏻｜LIKE'.padEnd(12)}` + `${'👎🏻｜DISLIKE'.padEnd(14)}` + `${'❤｜LOVE'.padEnd(8)}\n`;
+	data = `${'🚀｜N°'.padEnd(7)}` + `${'@｜Name'.padEnd(16)}` + `${'🆕｜NEW'.padEnd(9)}` + `${'👍🏻｜LIKE'.padEnd(12)}` + `${'👎🏻｜DISLIKE'.padEnd(14)}` + `${'❤｜LOVE'.padEnd(8)}\n`;
 
 	array.forEach(elem => {
-		data = data + `${count.toString().padEnd(6)}` + elem.data;
+		data = data + `${count.toString().padEnd(8)}` + elem.data;
 		count++;
 	});
 
-	const exampleEmbed = new MessageEmbed()
-		.setColor('#ff00d7')
+	var exampleEmbed = new MessageEmbed()
+		.setColor('#b90c0c')
 		.setTitle('📊｜Statistique')
-		.setURL('https://discord.js.org/')
-		.setDescription(data+"```")
-		.setTimestamp()
-		.setFooter(displayVersion().version);
+		.setDescription("```\n"+data+"```")
+		.setTimestamp(new Date())
+		.setFooter({text: displayVersion().version})
 
-	client.channels.cache.get(getChannelPause()).send(exampleEmbed);
+	client.channels.cache.get(getChannelPause(message)).send({ embeds: [exampleEmbed] })
 }
+
+function getCat(message = false) {
+	var dataNsfw = fs.readFileSync('./nsfwStat.db'), myObjNsfw;
+	var { userUuid, userStat, userName} = "";
+
+	myObjNsfw = JSON.parse(dataNsfw);
+
+	// ❔
+
+	myObjNsfw = myObjNsfw[getChannelPause(message)]["categories"];
+
+	var array = new Array();
+	var data = "";
+	var count = 1;
+
+	Object.keys(myObjNsfw).forEach(function(elem, idx) {
+		let cate = elem;
+		let cateNum = ""+myObjNsfw[elem];
+		let countTotal = parseInt(cate);
+
+		array.push({count: countTotal, data: `${cate.padEnd(20)}` + `${cateNum.padEnd(5)}\n`});
+	})
+
+	array.sort((a,b) => a.count-b.count).reverse();
+
+	data = `${'🚀｜N°'.padEnd(7)}` + `${'@｜Name'.padEnd(16)}` + `${'@｜Count'.padEnd(16)}\n`;
+
+	array.forEach(elem => {
+		data = data + `${count.toString().padEnd(9)}` + elem.data;
+		count++;
+	});
+
+	var exampleEmbed = new MessageEmbed()
+		.setColor('#b90c0c')
+		.setTitle('📊｜Statistique')
+		.setDescription("```\n"+data+"```")
+		.setTimestamp(new Date())
+		.setFooter({text: displayVersion().version})
+
+	client.channels.cache.get(getChannelPause(message)).send({ embeds: [exampleEmbed] })
+}
+
 // ### end fonction ###
 // ####################
