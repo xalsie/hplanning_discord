@@ -4,8 +4,10 @@
     const fs = require('fs');
 // ### import discord.js
 	const { Client, Permissions, MessageEmbed} = require('discord.js');
-	const permissions = new Permissions(8);
-	const client = new Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
+	const client = new Client({
+		partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
+		intents: ['DIRECT_MESSAGES', 'DIRECT_MESSAGE_REACTIONS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'GUILDS']
+	});
 // ### import axios
 	const axios = require('axios');
 // ### import moment.js
@@ -46,7 +48,7 @@ client.on('ready', () => {
 	console.log(`\nBot 3 -> Logged in as ${client.user.tag}!`);
 });
 
-client.on('message', async message => {
+client.on('messageCreate', async message => {
 
 	let args = message.content.split(" ");
 
@@ -111,7 +113,7 @@ client.on('message', async message => {
 });
 
 client.on('messageReactionAdd', async (_reaction, user) => {
-	if (user.id === "888354278043947038" || user.id === "884429785802092574" || user.id === "923238213768863835" || user.id === "927613733126172672") {
+	if (['888354278043947038', '884429785802092574', '923238213768863835', '927613733126172672', '945622322247770113'].includes(user.id)) {
 		return 1;
 	}
 
