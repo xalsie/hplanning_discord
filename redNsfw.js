@@ -6,7 +6,10 @@
 	const { Client, Permissions, MessageEmbed} = require('discord.js');
 	const client = new Client({
 		partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
-		intents: ['DIRECT_MESSAGES', 'DIRECT_MESSAGE_REACTIONS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'GUILDS']
+		intents: ['DIRECT_MESSAGES', 'DIRECT_MESSAGE_REACTIONS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'GUILDS'],
+		disableMentions: "all",
+		shards: "auto",
+		restTimeOffset: 0
 	});
 
 // ### import axios
@@ -29,6 +32,7 @@
 // ______________________
 
 const {bot_2, reddit} = require('./config.json');
+const { exit } = require('process');
 	const {prefix, prefix2, releasePub, token} = bot_2;
 
 client.on('ready', () => {
@@ -172,13 +176,13 @@ function addReactToJson(user, react, uuidChannel) {
 		if (err) throw err;
 
 		try {
-			console.log("Try parse json ...");
+			// console.log("Try parse json ...");
 
 			myObjNsfw = JSON.parse(data);
 
 			if (myObjNsfw[uuidChannel]["topUsers"][user.id] == undefined) {
-				console.log("create array ...");
-				console.log("######");
+				// console.log("create array ...");
+				// console.log("######");
 				myObjNsfw[uuidChannel]["topUsers"][user.id] = {};
 				myObjNsfw[uuidChannel]["topUsers"][user.id]["name"] = user.username;
 				myObjNsfw[uuidChannel]["topUsers"][user.id]["new"] = 0;
@@ -195,19 +199,28 @@ function addReactToJson(user, react, uuidChannel) {
 			btAutre = myObjNsfw[uuidChannel]["topUsers"][user.id]["autre"];
 
 		} catch (err) {
-			console.log('There has been an error parsing your JSON.');
+			// console.log('There has been an error parsing your JSON.');
 
-			console.log("VIDE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-			myObjNsfw = {};
-			myObjNsfw[uuidChannel] = {};
-			myObjNsfw[uuidChannel]["topUsers"] = {};
-			myObjNsfw[uuidChannel]["topUsers"][user.id] = {};
-			myObjNsfw[uuidChannel]["topUsers"][user.id]["name"] = user.username;
-			myObjNsfw[uuidChannel]["topUsers"][user.id]["new"] = 0;
-			myObjNsfw[uuidChannel]["topUsers"][user.id]["like"] = 0;
-			myObjNsfw[uuidChannel]["topUsers"][user.id]["dislike"] = 0;
-			myObjNsfw[uuidChannel]["topUsers"][user.id]["love"] = 0;
-			myObjNsfw[uuidChannel]["topUsers"][user.id]["autre"] = 0;
+			// console.log("VIDE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+			if (myObjNsfw == undefined) {
+				myObjNsfw = {};
+			}
+			if (myObjNsfw[uuidChannel] == undefined) {
+				myObjNsfw[uuidChannel] = {};
+			}
+			if (myObjNsfw[uuidChannel]["topUsers"] == undefined) {
+				myObjNsfw[uuidChannel]["topUsers"] = {};
+			}
+			if (myObjNsfw[uuidChannel]["topUsers"][user.id] == undefined) {
+				myObjNsfw[uuidChannel]["topUsers"][user.id] = {};
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["name"] = user.username;
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["new"] = 0;
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["like"] = 0;
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["dislike"] = 0;
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["love"] = 0;
+				myObjNsfw[uuidChannel]["topUsers"][user.id]["autre"] = 0;
+			}
 
 			btNew = myObjNsfw[uuidChannel]["topUsers"][user.id]["new"];
 			btLike = myObjNsfw[uuidChannel]["topUsers"][user.id]["like"];
@@ -253,26 +266,35 @@ function addCategoriesToJson(user, categories, uuidChannel) {
 		if (err) throw err;
 
 		try {
-			console.log("Try parse json ...");
+			// console.log("Try parse json ...");
 
 			myObjNsfw = JSON.parse(data);
 
 			if (myObjNsfw[uuidChannel]["categories"][categories] == undefined) {
-				console.log("create array ...");
-				console.log("######");
+				// console.log("create array ...");
+				// console.log("######");
 				myObjNsfw[uuidChannel]["categories"][categories] = 0;
 			}
 
 			cate = myObjNsfw[uuidChannel]["categories"][categories];
 
 		} catch (err) {
-			console.log('There has been an error parsing your JSON.');
+			// console.log('There has been an error parsing your JSON.');
 
-			console.log("VIDE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-			// myObjNsfw = {};
-			// myObjNsfw[uuidChannel] = {};
-			// myObjNsfw[uuidChannel]["categories"] = {};
-			myObjNsfw[uuidChannel]["categories"][categories] = 0;
+			// console.log("VIDE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+			if (myObjNsfw == undefined) {
+				myObjNsfw = {};
+			}
+			if (myObjNsfw[uuidChannel] == undefined) {
+				myObjNsfw[uuidChannel] = {};
+			}
+			if (myObjNsfw[uuidChannel]["categories"] == undefined) {
+				myObjNsfw[uuidChannel]["categories"] = {};
+			}
+			if (myObjNsfw[uuidChannel]["categories"][categories] == undefined) {
+				myObjNsfw[uuidChannel]["categories"][categories] = 0;
+			}
 
 			cate = myObjNsfw[uuidChannel]["categories"][categories];
 			console.log(err);
@@ -345,14 +367,17 @@ function getRedditPicture(subreddit = false, message = false, user = false) {
 			postMessage(link, video, true, message, user);
 			return;
 		} 
-		// else if (link.domain == 'i.imgur.com') {
-		// 	postMessage(link, link.url, true, message, user);
-		// }
-		else {
-			// let fileSplit = link.url.split('?')[0];
-			// let fileIndex = fileSplit.substr(fileSplit.lastIndexOf(".")+1);
+		else if (link.domain == 'i.imgur.com') {
+			let fileSplit = link.url.split('?')[0];
+			let fileIndex = fileSplit.substr(fileSplit.lastIndexOf(".")+1);
 				// console.log("fileIndex -> "+ fileIndex);
-
+			if (fileIndex == "gifv") {
+				postMessage(link, link.url, true, message, user);
+			} else {
+				postMessage(link, link.url, false, message, user);
+			}
+		}
+		else {
 			postMessage(link, link.url, false, message, user);
 		}
 
@@ -382,12 +407,12 @@ function getChannelPause(message) {
 	return uuid;
 }
 
-function postMessage(link, url, is_gif, message, user) {
+async function postMessage(link, url, is_gif, message, user) {
 	var exampleEmbed = new MessageEmbed()
 		.setColor('#ff00d7')
 		.setTitle(link.subreddit_name_prefixed)
 		.setURL("https://www.reddit.com"+link.permalink)
-		.setDescription("Publié par [u/"+link.author+"](https://www.reddit.com/u/"+link.author+") `"+link.author_flair_text+"`\n\n ⬇️｜ "+url+" ｜⬇️")
+		.setDescription("Publié par [u/"+link.author+"](https://www.reddit.com/u/"+link.author+") `"+link.author_flair_text+"`\n\n ⬆｜ "+url+" ｜⬆")
 
 		// .setImage(url)
 		.setTimestamp(new Date())
@@ -395,7 +420,8 @@ function postMessage(link, url, is_gif, message, user) {
 		// .setColor('#0099ff')
 
 	if (is_gif) {
-		mess = { embeds: [exampleEmbed], files: [url] }
+		mess = { embeds: [exampleEmbed] }
+		await client.channels.cache.get(getChannelPause(message)).send({ content: url});
 	} else {
 		exampleEmbed
 			.setImage(url)
@@ -403,13 +429,13 @@ function postMessage(link, url, is_gif, message, user) {
 		mess = { embeds: [exampleEmbed] }
 	}
 
-	client.channels.cache.get(getChannelPause(message)).send(mess)
-		.then(function (message) {
-			message.react('🆕')
-			message.react('👍🏻')
-			message.react('👎🏻')
-			message.react('❤')
-		});
+	const reactionEmoji = await client.channels.cache.get(getChannelPause(message)).send(mess);
+		// .then(function (message) { });
+		
+		reactionEmoji.react('🆕')
+			.then(() => reactionEmoji.react('👍🏻'))
+			.then(() => reactionEmoji.react('👎🏻'))
+			.then(() => reactionEmoji.react('❤'))
 }
 
 function getStat(message = false) {
@@ -473,7 +499,7 @@ function getCat(message = false) {
 	Object.keys(myObjNsfw).forEach(function(elem, idx) {
 		let cate = elem;
 		let cateNum = ""+myObjNsfw[elem];
-		let countTotal = parseInt(cate);
+		let countTotal = parseInt(cateNum);
 
 		array.push({count: countTotal, data: `${cate.padEnd(20)}` + `${cateNum.padEnd(5)}\n`});
 	})
