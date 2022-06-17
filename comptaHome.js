@@ -1,12 +1,15 @@
 // #############################
 // ### start import require ###
 // ### import write/read file
-    const fs = require('fs');
+const fs = require('fs');
 // ### import discord.js
 	const { Client, Permissions, MessageEmbed} = require('discord.js');
 	const client = new Client({
 		partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
-		intents: ['DIRECT_MESSAGES', 'DIRECT_MESSAGE_REACTIONS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'GUILDS']
+		intents: ['DIRECT_MESSAGES', 'DIRECT_MESSAGE_REACTIONS', 'GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'GUILDS'],
+		disableMentions: "all",
+		shards: "auto",
+		restTimeOffset: 0
 	});
 // ### import axios
 	const axios = require('axios');
@@ -31,7 +34,6 @@ const {bot_3} = require('./config.json');
 const {channelJson} = require('./configCompta.json');
 
 var list = fs.readFileSync('./compta.json'), myObj;
-	var { uuid_slam, uuid_sisr, uuid_dev, channel_slam, channel_sisr, channel_dev } = "";
 
 	try {
 		myObj = JSON.parse(list);
@@ -48,14 +50,19 @@ client.on('ready', () => {
 	console.log(`\nBot 3 -> Logged in as ${client.user.tag}!`);
 });
 
-client.on('messageCreate', async message => {
+client.on('message', async message => {
 
 	let args = message.content.split(" ");
+
+	if (args[0].toLowerCase() == `${prefix}first`) {
+		deleteMsg(message);
+		message.channel.send('Bot Compta init!');
+	}
 
 	if (args[0].toLowerCase() == `${prefix}compta`) {
 		deleteMsg(message)
 
-		displayMsg()
+		getMsgData()
 	}
 
 	if (args[0].toLowerCase() == `${prefix}2`) {
@@ -67,7 +74,7 @@ client.on('messageCreate', async message => {
 
 		switch (args[1]) {
 			case 'add':
-				let arr = {"icone": args[2], "NameGroupe": args[3], "Dollars": args[4]};
+				let arr = {"Icone": args[2], "Name": args[3], "Cash": args[4]};
 
 				let lastIndex = parseInt(Object.keys(myObj.list[2])[Object.keys(myObj.list[2]).length-1])+1;
 				
@@ -81,7 +88,7 @@ client.on('messageCreate', async message => {
 		}
 
 		saveConf(myObj, "./compta.json");
-		displayMsg(myObj)
+		getMsgData(myObj)
 	}
 
 	if (args[0].toLowerCase() == `${prefix}3`) {
@@ -106,21 +113,21 @@ client.on('messageCreate', async message => {
 		}
 
 		saveConf(myObj, "./compta.json");
-		displayMsg()
+		getMsgData()
 	}
 
 
 });
 
 client.on('messageReactionAdd', async (_reaction, user) => {
-	if (['888354278043947038', '884429785802092574', '923238213768863835', '927613733126172672', '945622322247770113'].includes(user.id)) {
+	if (['888354278043947038', '884429785802092574', '923238213768863835', '945622322247770113', '927613733126172672'].includes(user.id)) {
 		return 1;
 	}
 
 	switch (_reaction._emoji.name) {
 		case '🔄':
 			_reaction.users.remove(user.id);
-				displayMsg();
+				getMsgData();
 			break;
 		default:
 			break;
@@ -131,48 +138,12 @@ client.login(token);
 
 // uuid channel compta -> 926369794863812729
 
-/*
-> 📈｜__**Blanchiment max semaine :**__
-> ```DIFF
-> ❓    ｜———         :   $ 0
-> ```
-> 🏦｜**En cas de dépassement voir avec la banque sinon il y auras des répercutions**
-———————————————————
-> 🧼｜__**Blanchiment en cours :**__
-> ```DIFF
-> ❓    ｜———         :   $ 0
-> ```
-———————————————————
-> 📝｜__**3 : Livre des comptes**__
-> ```DIFF
-> + 📋｜Compte The Saviors  :   $ 0
-> - 💰｜Argent Sale     	:   $ 0
-> ```
-———————————————————
-> 🔫｜__**Armes en stock :**__
-> ```JSON
-> 0    ｜Armes
-> ```
-———————————————————
-> 🌱｜__**Items drogues :**__
-> ```JSON
-> 0    ｜Items drogues
-> ```
-———————————————————
-> 📦｜__**Items :**__
-> ```CS
-> 0    ｜Items
-> ```
-———————————————————
-> 🏃‍♂️｜__**Argent qui devrait arriver sous peu :**__
-> ```DIFF
-> ❓    ｜———         :   $ 0
-> ```
-———————————————————
-```DIFF
-+ 🔄｜Mise à jour: 02/01 à 18:23
-```
-*/
+module.exports = {
+	refreshByWeb: function () {
+		getMsgData();
+	}
+};
+
 
 // ######################
 // ### start fonction ###
@@ -219,7 +190,19 @@ function saveConf(myObj, file) {
 	});
 }
 
-function displayMsg(myObj) {
+function getMsgData() {
+	try {
+		myObj = JSON.parse(fs.readFileSync('./compta.json'));
+		// console.log(myObj);
+	} catch (err) {
+		console.log('There has been an error parsing your JSON.');
+		console.log(err);
+	}
+
+	toDisplayMsg();
+}
+
+function toDisplayMsg() {
 
 	var section_1 = section1();
 	var section_2 = section2();
@@ -270,9 +253,16 @@ function section1() {
 	// !!1 del idLine
 
 	let dataMsg = 	"> 📈｜**1**｜__**Blanchiment max semaine :**__\n"+
-					"> ```DIFF\n"+
-					"> ❓｜1 ｜———         :   $ 0\n"+
-					"> ```\n"+
+					"> ```DIFF\n";
+
+	for (element in myObj.list[1]) {
+		dataMsg += 	"> "+myObj.list[1][element].Icone+
+					"｜"+String(element).padEnd(2)+
+					"｜"+String(myObj.list[1][element].Name).padEnd(20)+
+					":   "+convertNumber(myObj.list[1][element].Cash)+"\n";
+	}
+
+	dataMsg +=		"> ```\n"+
 					"> **`🏦｜En cas de dépassement voir avec la banque sinon il y auras des répercutions`**";
 
 	return dataMsg;
@@ -288,10 +278,10 @@ function section2() {
 					"> ```DIFF\n";
 
 	for (element in myObj.list[2]) {
-		dataMsg += 	"> "+myObj.list[2][element].icone+
-					"｜"+element.padEnd(2)+
-					"｜"+myObj.list[2][element].NameGroupe.padEnd(12)+
-					":   "+convertNumber(myObj.list[2][element].Dollars)+"\n";
+		dataMsg += 	"> "+myObj.list[2][element].Icone+
+					"｜"+String(element).padEnd(2)+
+					"｜"+String(myObj.list[2][element].Name).padEnd(20)+
+					":   "+convertNumber(myObj.list[2][element].Cash)+"\n";
 	}
 
 	dataMsg +=		"> ```";
@@ -304,11 +294,23 @@ function section3() {
 	// Help commande
 	// !!3 idLine Dollars
 	
-	let dataMsg =	"> 📝｜**3**｜__**Livre des comptes**__\n"+
-					"> ```DIFF\n"+
-					"> + 📋｜1 ｜Compte The Saviors  :   "+convertNumber(myObj.list[3].argent_propre)+"\n"+
-					"> - 💰｜2 ｜Argent Sale         :   "+convertNumber(myObj.list[3].argent_sale)+"\n"+
-					"> ```";
+	// let dataMsg =	"> 📝｜**3**｜__**Livre des comptes**__\n"+
+	// 				"> ```DIFF\n"+
+	// 				"> + 📋｜1 ｜Compte The Saviors  :   "+convertNumber(myObj.list[3].argent_propre)+"\n"+
+	// 				"> - 💰｜2 ｜Argent Sale         :   "+convertNumber(myObj.list[3].argent_sale)+"\n"+
+	// 				"> ```";
+
+	let dataMsg = 	"> 📝｜**3**｜__**Livre des comptes**__\n"+
+					"> ```DIFF\n";
+
+	for (element in myObj.list[3]) {
+		dataMsg += 	"> "+myObj.list[3][element].Icone+
+					"｜"+String(element).padEnd(2)+
+					"｜"+String(myObj.list[3][element].Name).padEnd(20)+
+					":   "+convertNumber(myObj.list[3][element].Cash)+"\n";
+	}
+
+	dataMsg +=		"> ```";
 
 	return dataMsg;
 }
@@ -323,7 +325,7 @@ function section4() {
 					"> ```JSON\n";
 
 	for (element in myObj.list[4]) {
-		dataMsg += 	"> "+myObj.list[4][element].countItems.padEnd(5)+
+		dataMsg += 	"> "+String(myObj.list[4][element].countItems).padEnd(5)+
 					"｜"+myObj.list[4][element].nameItems+"\n";
 	}
 
@@ -342,7 +344,7 @@ function section5() {
 					"> ```JSON\n";
 
 	for (element in myObj.list[5]) {
-		dataMsg += 	"> "+myObj.list[5][element].countItems.padEnd(5)+
+		dataMsg += 	"> "+String(myObj.list[5][element].countItems).padEnd(5)+
 					"｜"+myObj.list[5][element].nameItems+"\n";
 	}
 
@@ -361,7 +363,7 @@ function section6() {
 					"> ```JSON\n";
 
 	for (element in myObj.list[6]) {
-		dataMsg += 	"> "+myObj.list[6][element].countItems.padEnd(5)+
+		dataMsg += 	"> "+String(myObj.list[6][element].countItems).padEnd(5)+
 					"｜"+myObj.list[6][element].nameItems+"\n";
 	}
 
