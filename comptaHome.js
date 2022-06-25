@@ -15,6 +15,7 @@ const fs = require('fs');
 	const axios = require('axios');
 // ### import moment.js
 	const moment = require('moment');
+	const momentTZ = require('moment-timezone');
 	moment.locale('fr');
 // ### import sortby - sort table order
     require("./sortBy.js");
@@ -374,15 +375,22 @@ function section6() {
 
 function section7() {
 	let dataMsg = 	"> 🏃‍♂️｜**7**｜__**Argent qui devrait arriver sous peu :**__\n"+
-					"> ```DIFF\n"+
-					"> ❓    ｜———         :   $ 0\n"+
-					"> ```";
+					"> ```DIFF\n";
+
+	for (element in myObj.list[7]) {
+		dataMsg += 	"> "+myObj.list[7][element].Icone+
+					"｜"+String(element).padEnd(2)+
+					"｜"+String(myObj.list[7][element].Name).padEnd(20)+
+					":   "+convertNumber(myObj.list[7][element].Cash)+"\n";
+	}
+
+	dataMsg += 		"> ```";
 
 	return dataMsg;
 }
 
 function sectionMaj() {
-	let dataMsg = "```DIFF\n+ 🔄｜Mise à jour : "+moment().format('llll')+"```";
+	let dataMsg = "```DIFF\n+ 🔄｜Mise à jour : "+moment().tz("Europe/Paris").format('llll')+"```";
 
 	return dataMsg;
 }
