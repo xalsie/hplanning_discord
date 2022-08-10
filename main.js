@@ -2,7 +2,7 @@
 // ### Structure multi Bots
 // ### LeGrizzli#0341
 
-// const bot_1 = require('./home.js');
-// const bot_2 = require('./redNsfw.js');
-// const bot_3 = require('./comptaHome.js');
-const web_1 = require('./web.js');
+// import bot_1 from './home.js';
+// import bot_2 from './redNsfw.js';
+// import bot_3 from './comptaHome.js';
+import app from './web.js';
